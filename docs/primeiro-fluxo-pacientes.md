@@ -80,3 +80,18 @@ Se tentar cadastrar CPF duplicado, a API responde conflito:
 ```http
 409 Conflict
 ```
+
+## Validacoes iniciais
+
+O cadastro tambem valida:
+
+- nome obrigatorio;
+- CPF obrigatorio com exatamente 11 digitos;
+- data de nascimento nao pode estar no futuro;
+- telefone obrigatorio.
+
+Quando algum dado invalido e enviado, a API responde:
+
+```http
+400 Bad Request
+```

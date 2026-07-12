@@ -1,3 +1,4 @@
+using UBSFlow.Aplicacao.Comum;
 using UBSFlow.Aplicacao.Pacientes;
 using UBSFlow.Dominio.Pacientes;
 using Xunit;
@@ -40,6 +41,56 @@ public class PacienteServiceTests
 
         var exception = Assert.Throws<InvalidOperationException>(() => service.Criar(request));
         Assert.Equal("Ja existe um paciente cadastrado com este CPF.", exception.Message);
+    }
+
+    [Fact]
+    public void Criar_NaoDevePermitirNomeVazio()
+    {
+        var repositorio = new PacienteRepositorioFake();
+        var service = new PacienteService(repositorio);
+        var request = new CriarPacienteRequest(
+            "",
+            "12345678901",
+            new DateOnly(1990, 5, 12),
+            "11999990000",
+            null);
+
+        var exception = Assert.Throws<ValidacaoException>(() => service.Criar(request));
+        Assert.Equal("Nome e obrigatorio.", exception.Message);
+    }
+
+    [Theory]
+    [InlineData("123")]
+    [InlineData("1234567890A")]
+    public void Criar_NaoDevePermitirCpfInvalido(string cpf)
+    {
+        var repositorio = new PacienteRepositorioFake();
+        var service = new PacienteService(repositorio);
+        var request = new CriarPacienteRequest(
+            "Maria Silva",
+            cpf,
+            new DateOnly(1990, 5, 12),
+            "11999990000",
+            null);
+
+        var exception = Assert.Throws<ValidacaoException>(() => service.Criar(request));
+        Assert.Equal("CPF deve conter exatamente 11 digitos.", exception.Message);
+    }
+
+    [Fact]
+    public void Criar_NaoDevePermitirDataNascimentoNoFuturo()
+    {
+        var repositorio = new PacienteRepositorioFake();
+        var service = new PacienteService(repositorio);
+        var request = new CriarPacienteRequest(
+            "Maria Silva",
+            "12345678901",
+            DateOnly.FromDateTime(DateTime.Today.AddDays(1)),
+            "11999990000",
+            null);
+
+        var exception = Assert.Throws<ValidacaoException>(() => service.Criar(request));
+        Assert.Equal("Data de nascimento nao pode estar no futuro.", exception.Message);
     }
 
     private sealed class PacienteRepositorioFake : IPacienteRepositorio

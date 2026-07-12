@@ -1,3 +1,4 @@
+using UBSFlow.Aplicacao.Comum;
 using UBSFlow.Dominio.Pacientes;
 
 namespace UBSFlow.Aplicacao.Pacientes;
@@ -28,6 +29,8 @@ public class PacienteService
 
     public PacienteResponse Criar(CriarPacienteRequest request)
     {
+        ValidarCriacao(request);
+
         if (pacienteRepositorio.ObterPorCpf(request.Cpf) is not null)
         {
             throw new InvalidOperationException("Ja existe um paciente cadastrado com este CPF.");
@@ -43,6 +46,34 @@ public class PacienteService
         pacienteRepositorio.Adicionar(paciente);
 
         return MapearPaciente(paciente);
+    }
+
+    private static void ValidarCriacao(CriarPacienteRequest request)
+    {
+        if (string.IsNullOrWhiteSpace(request.Nome))
+        {
+            throw new ValidacaoException("Nome e obrigatorio.");
+        }
+
+        if (string.IsNullOrWhiteSpace(request.Cpf))
+        {
+            throw new ValidacaoException("CPF e obrigatorio.");
+        }
+
+        if (request.Cpf.Length != 11 || request.Cpf.Any(c => !char.IsDigit(c)))
+        {
+            throw new ValidacaoException("CPF deve conter exatamente 11 digitos.");
+        }
+
+        if (request.DataNascimento > DateOnly.FromDateTime(DateTime.Today))
+        {
+            throw new ValidacaoException("Data de nascimento nao pode estar no futuro.");
+        }
+
+        if (string.IsNullOrWhiteSpace(request.Telefone))
+        {
+            throw new ValidacaoException("Telefone e obrigatorio.");
+        }
     }
 
     private static PacienteResponse MapearPaciente(Paciente paciente)

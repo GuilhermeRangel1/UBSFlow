@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using UBSFlow.Aplicacao.Comum;
 using UBSFlow.Aplicacao.Pacientes;
 
 namespace UBSFlow.Api.Controllers;
@@ -40,6 +41,10 @@ public class PacientesController : ControllerBase
         catch (InvalidOperationException exception)
         {
             return Conflict(new { mensagem = exception.Message });
+        }
+        catch (ValidacaoException exception)
+        {
+            return BadRequest(new { mensagem = exception.Message });
         }
     }
 }
