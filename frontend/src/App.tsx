@@ -280,6 +280,19 @@ export function App() {
     }
   }, [session, activeModule]);
 
+  if (!session) {
+    return (
+      <PortfolioLanding
+        loginStatus={loginStatus}
+        onLogin={handleLogin}
+        senha={senha}
+        setSenha={setSenha}
+        setUsuario={setUsuario}
+        usuario={usuario}
+      />
+    );
+  }
+
   const VisibleIcon = selectedModule.icon;
 
   return (
@@ -468,6 +481,182 @@ function Metric({ label, value, trend }: { label: string; value: string; trend: 
       <strong>{value}</strong>
       <small>{trend}</small>
     </article>
+  );
+}
+
+function PortfolioLanding({
+  loginStatus,
+  onLogin,
+  senha,
+  setSenha,
+  setUsuario,
+  usuario
+}: {
+  loginStatus: string;
+  onLogin: () => void;
+  senha: string;
+  setSenha: (value: string) => void;
+  setUsuario: (value: string) => void;
+  usuario: string;
+}) {
+  const selectedUser = demoUsers.find((item) => item.usuario === usuario) ?? demoUsers[0];
+
+  function selecionarUsuario(value: string) {
+    const selected = demoUsers.find((item) => item.usuario === value);
+    setUsuario(value);
+    setSenha(selected?.senha ?? "");
+  }
+
+  return (
+    <main className="portfolio-shell">
+      <nav className="portfolio-nav" aria-label="Principal">
+        <div className="portfolio-brand">
+          <span>
+            <Activity size={22} />
+          </span>
+          <strong>UBSFlow</strong>
+        </div>
+        <div className="portfolio-links">
+          <a href="#produto">Produto</a>
+          <a href="#fluxo">Fluxo</a>
+          <a href="#demo">Demo</a>
+        </div>
+      </nav>
+
+      <section className="portfolio-hero">
+        <div className="hero-copy">
+          <span className="portfolio-kicker">Backend real. Interface de produto. Fluxo de UBS.</span>
+          <h1>Uma API de clinica que parece um produto pronto para apresentar.</h1>
+          <p>
+            UBSFlow organiza pacientes, agenda, fila, triagem e atendimento em uma
+            experiencia pensada para vender dominio de backend sem abrir mao de visual.
+          </p>
+          <div className="portfolio-actions">
+            <a className="landing-primary" href="#demo">
+              Entrar na demo
+              <ArrowRight size={18} />
+            </a>
+            <a className="landing-secondary" href="#fluxo">
+              Ver fluxo do produto
+            </a>
+          </div>
+        </div>
+
+        <div className="showcase-panel" aria-label="Preview do UBSFlow">
+          <div className="showcase-topbar">
+            <span />
+            <span />
+            <span />
+          </div>
+          <div className="showcase-screen">
+            <div>
+              <small>Fila em tempo real</small>
+              <strong>Triagem prioritaria</strong>
+            </div>
+            <div className="pulse-line">
+              <span />
+              <span />
+              <span />
+            </div>
+            <div className="patient-stack">
+              <article>
+                <b>Maria Souza</b>
+                <small>Risco amarelo - 09 min</small>
+              </article>
+              <article>
+                <b>Joao Lima</b>
+                <small>Consulta medica - sala 2</small>
+              </article>
+              <article>
+                <b>Ana Costa</b>
+                <small>Check-in concluido</small>
+              </article>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="portfolio-section" id="produto">
+        <div className="section-heading">
+          <span>Por que existe</span>
+          <h2>Mais do que cadastro: um fluxo completo de atendimento.</h2>
+        </div>
+        <div className="feature-reel">
+          <article>
+            <UserRound size={24} />
+            <strong>Cadastro com contexto</strong>
+            <p>Pacientes entram no sistema conectados a historico, fila e atendimentos.</p>
+          </article>
+          <article>
+            <HeartPulse size={24} />
+            <strong>Triagem com regra</strong>
+            <p>Classificacao de risco e prioridade automatica mostram regra de negocio real.</p>
+          </article>
+          <article>
+            <ShieldCheck size={24} />
+            <strong>RBAC e auditoria</strong>
+            <p>Cada perfil acessa o que faz sentido, com rastreio das acoes importantes.</p>
+          </article>
+        </div>
+      </section>
+
+      <section className="story-section" id="fluxo">
+        <div className="section-heading">
+          <span>Jornada</span>
+          <h2>Da chegada ao fechamento, cada etapa conversa com a proxima.</h2>
+        </div>
+        <div className="story-track">
+          {journeyStages.map((stage, index) => {
+            const Icon = stage.icon;
+            return (
+              <article key={stage.key}>
+                <small>{String(index + 1).padStart(2, "0")}</small>
+                <Icon size={24} />
+                <strong>{stage.label}</strong>
+                <p>{stage.description}</p>
+              </article>
+            );
+          })}
+        </div>
+      </section>
+
+      <section className="demo-section" id="demo">
+        <div className="demo-copy">
+          <span>Demo navegavel</span>
+          <h2>Escolha um papel e entre no sistema operacional.</h2>
+          <p>
+            Use a conta de recepcao para testar cadastro de pacientes ou entre como
+            medico, gestor, enfermagem e admin para visualizar a experiencia por perfil.
+          </p>
+        </div>
+
+        <div className="landing-login">
+          <div className="session-heading">
+            <LockKeyhole size={16} />
+            <span>Acesso demo</span>
+          </div>
+          <label>
+            Usuario
+            <select value={usuario} onChange={(event) => selecionarUsuario(event.target.value)}>
+              {demoUsers.map((user) => (
+                <option key={user.usuario} value={user.usuario}>
+                  {user.usuario} - {user.papel}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label>
+            Senha
+            <input value={senha} onChange={(event) => setSenha(event.target.value)} type="password" />
+          </label>
+          <button className="landing-primary full" onClick={onLogin} type="button">
+            Entrar como {selectedUser.papel}
+            <LogIn size={17} />
+          </button>
+          <p>{loginStatus}</p>
+        </div>
+      </section>
+    </main>
   );
 }
 
