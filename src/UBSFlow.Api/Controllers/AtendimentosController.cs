@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using UBSFlow.Aplicacao.Atendimentos;
 using UBSFlow.Aplicacao.Comum;
@@ -5,6 +6,7 @@ using UBSFlow.Aplicacao.Comum;
 namespace UBSFlow.Api.Controllers;
 
 [ApiController]
+[Authorize(Roles = "ADMIN,MEDICO")]
 [Route("atendimentos")]
 public class AtendimentosController : ControllerBase
 {

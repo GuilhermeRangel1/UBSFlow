@@ -2,6 +2,7 @@ using Microsoft.Extensions.DependencyInjection;
 using UBSFlow.Aplicacao.Auditoria;
 using UBSFlow.Aplicacao.Agenda;
 using UBSFlow.Aplicacao.Atendimentos;
+using UBSFlow.Aplicacao.Autenticacao;
 using UBSFlow.Aplicacao.Fila;
 using UBSFlow.Aplicacao.Pacientes;
 using UBSFlow.Aplicacao.Profissionais;
@@ -23,6 +24,7 @@ public static class DependencyInjection
         services.AddScoped<AtendimentoService>();
         services.AddScoped<RelatorioService>();
         services.AddScoped<AuditoriaService>();
+        services.AddScoped<AuthService>();
 
         return services;
     }

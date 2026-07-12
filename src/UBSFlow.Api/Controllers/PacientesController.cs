@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using UBSFlow.Aplicacao.Comum;
 using UBSFlow.Aplicacao.Pacientes;
@@ -5,6 +6,7 @@ using UBSFlow.Aplicacao.Pacientes;
 namespace UBSFlow.Api.Controllers;
 
 [ApiController]
+[Authorize]
 [Route("pacientes")]
 public class PacientesController : ControllerBase
 {
@@ -20,6 +22,7 @@ public class PacientesController : ControllerBase
     }
 
     [HttpGet]
+    [Authorize(Roles = "ADMIN,RECEPCIONISTA,ENFERMEIRO,MEDICO,GESTOR")]
     public IActionResult Listar(
         [FromQuery] string? nome,
         [FromQuery] string? cpf,
@@ -39,6 +42,7 @@ public class PacientesController : ControllerBase
     }
 
     [HttpGet("{id:guid}")]
+    [Authorize(Roles = "ADMIN,RECEPCIONISTA,ENFERMEIRO,MEDICO,GESTOR")]
     public IActionResult ObterPorId(Guid id)
     {
         var paciente = pacienteService.ObterPorId(id);
@@ -47,6 +51,7 @@ public class PacientesController : ControllerBase
     }
 
     [HttpGet("{id:guid}/historico")]
+    [Authorize(Roles = "ADMIN,ENFERMEIRO,MEDICO,GESTOR")]
     public IActionResult ObterHistorico(Guid id)
     {
         try
@@ -60,6 +65,7 @@ public class PacientesController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize(Roles = "ADMIN,RECEPCIONISTA")]
     public IActionResult Criar(CriarPacienteRequest request)
     {
         try

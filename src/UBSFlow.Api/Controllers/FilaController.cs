@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using UBSFlow.Aplicacao.Comum;
 using UBSFlow.Aplicacao.Fila;
@@ -5,6 +6,7 @@ using UBSFlow.Aplicacao.Fila;
 namespace UBSFlow.Api.Controllers;
 
 [ApiController]
+[Authorize]
 [Route("fila")]
 public class FilaController : ControllerBase
 {
@@ -16,6 +18,7 @@ public class FilaController : ControllerBase
     }
 
     [HttpPost("check-ins")]
+    [Authorize(Roles = "ADMIN,RECEPCIONISTA")]
     public IActionResult CriarCheckIn(CriarCheckInRequest request)
     {
         try
@@ -33,12 +36,14 @@ public class FilaController : ControllerBase
     }
 
     [HttpGet("hoje")]
+    [Authorize(Roles = "ADMIN,ENFERMEIRO,MEDICO,GESTOR")]
     public IActionResult ListarFilaHoje()
     {
         return Ok(filaAtendimentoService.ListarFila(new ListarFilaRequest(null)));
     }
 
     [HttpGet]
+    [Authorize(Roles = "ADMIN,ENFERMEIRO,MEDICO,GESTOR")]
     public IActionResult ListarFila([FromQuery] DateOnly? data)
     {
         return Ok(filaAtendimentoService.ListarFila(new ListarFilaRequest(data)));

@@ -1,9 +1,11 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using UBSFlow.Aplicacao.Auditoria;
 
 namespace UBSFlow.Api.Controllers;
 
 [ApiController]
+[Authorize(Roles = "ADMIN")]
 [Route("auditoria")]
 public class AuditoriaController : ControllerBase
 {

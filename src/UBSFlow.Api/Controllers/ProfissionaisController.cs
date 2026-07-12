@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using UBSFlow.Aplicacao.Comum;
 using UBSFlow.Aplicacao.Profissionais;
@@ -6,6 +7,7 @@ using UBSFlow.Dominio.Profissionais;
 namespace UBSFlow.Api.Controllers;
 
 [ApiController]
+[Authorize(Roles = "ADMIN,GESTOR")]
 [Route("profissionais")]
 public class ProfissionaisController : ControllerBase
 {
@@ -44,6 +46,7 @@ public class ProfissionaisController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize(Roles = "ADMIN")]
     public IActionResult Criar(CriarProfissionalRequest request)
     {
         try

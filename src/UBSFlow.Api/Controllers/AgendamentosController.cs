@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using UBSFlow.Aplicacao.Agenda;
 using UBSFlow.Aplicacao.Comum;
@@ -5,6 +6,7 @@ using UBSFlow.Aplicacao.Comum;
 namespace UBSFlow.Api.Controllers;
 
 [ApiController]
+[Authorize(Roles = "ADMIN,RECEPCIONISTA")]
 [Route("agendamentos")]
 public class AgendamentosController : ControllerBase
 {

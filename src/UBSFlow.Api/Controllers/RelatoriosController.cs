@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using UBSFlow.Aplicacao.Comum;
 using UBSFlow.Aplicacao.Relatorios;
@@ -5,6 +6,7 @@ using UBSFlow.Aplicacao.Relatorios;
 namespace UBSFlow.Api.Controllers;
 
 [ApiController]
+[Authorize(Roles = "ADMIN,GESTOR")]
 [Route("relatorios")]
 public class RelatoriosController : ControllerBase
 {
