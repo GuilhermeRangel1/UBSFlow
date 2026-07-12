@@ -21,4 +21,8 @@ public class AgendamentoRepositorioEmMemoria : IAgendamentoRepositorio
     {
         Agendamentos.Add(agendamento);
     }
+
+    public void SalvarAlteracoes()
+    {
+    }
 }

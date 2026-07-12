@@ -279,6 +279,10 @@ public class AgendamentoServiceTests
         {
             agendamentos.Add(agendamento);
         }
+
+        public void SalvarAlteracoes()
+        {
+        }
     }
 
     private sealed class PacienteRepositorioFake : IPacienteRepositorio

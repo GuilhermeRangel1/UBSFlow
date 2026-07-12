@@ -152,5 +152,6 @@ public class RelatorioServiceTests
         public IReadOnlyCollection<Agendamento> Listar() => agendamentos;
         public Agendamento? ObterPorId(Guid id) => agendamentos.FirstOrDefault(agendamento => agendamento.Id == id);
         public void Adicionar(Agendamento agendamento) => agendamentos.Add(agendamento);
+        public void SalvarAlteracoes() { }
     }
 }

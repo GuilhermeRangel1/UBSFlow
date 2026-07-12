@@ -128,6 +128,7 @@ public class AgendamentoService
         }
 
         agendamento.Remarcar(request.Inicio, request.Fim);
+        agendamentoRepositorio.SalvarAlteracoes();
 
         return MapearAgendamento(agendamento);
     }
@@ -152,6 +153,7 @@ public class AgendamentoService
         }
 
         agendamento.Cancelar(request.Motivo);
+        agendamentoRepositorio.SalvarAlteracoes();
         auditoriaService?.Registrar(
             AcaoAuditoria.AgendamentoCancelado,
             "Agendamento",

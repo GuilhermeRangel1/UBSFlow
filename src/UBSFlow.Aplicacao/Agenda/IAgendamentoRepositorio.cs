@@ -7,4 +7,5 @@ public interface IAgendamentoRepositorio
     IReadOnlyCollection<Agendamento> Listar();
     Agendamento? ObterPorId(Guid id);
     void Adicionar(Agendamento agendamento);
+    void SalvarAlteracoes();
 }

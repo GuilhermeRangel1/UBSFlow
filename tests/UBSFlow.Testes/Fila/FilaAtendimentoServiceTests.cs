@@ -204,6 +204,10 @@ public class FilaAtendimentoServiceTests
         {
             agendamentos.Add(agendamento);
         }
+
+        public void SalvarAlteracoes()
+        {
+        }
     }
 
     private sealed class TriagemRepositorioFake : ITriagemRepositorio

@@ -30,7 +30,7 @@ public static class DependencyInjection
 
         services.AddScoped<IPacienteRepositorio, PacienteRepositorioEf>();
         services.AddScoped<IProfissionalRepositorio, ProfissionalRepositorioEf>();
-        services.AddSingleton<IAgendamentoRepositorio, AgendamentoRepositorioEmMemoria>();
+        services.AddScoped<IAgendamentoRepositorio, AgendamentoRepositorioEf>();
         services.AddSingleton<ICheckInAtendimentoRepositorio, CheckInAtendimentoRepositorioEmMemoria>();
         services.AddSingleton<ITriagemRepositorio, TriagemRepositorioEmMemoria>();
         services.AddSingleton<IAtendimentoRepositorio, AtendimentoRepositorioEmMemoria>();
