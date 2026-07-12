@@ -30,3 +30,7 @@ Senha: ubsflow
 Nesta etapa, o `DbContext` ja existe, mas os endpoints ainda usam os repositorios em memoria.
 
 O proximo passo e trocar os repositorios por implementacoes com EF Core, um modulo por vez.
+
+## Modulos usando EF Core
+
+- Pacientes.

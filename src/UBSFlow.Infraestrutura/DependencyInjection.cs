@@ -28,7 +28,7 @@ public static class DependencyInjection
         services.AddDbContext<UbsFlowDbContext>(options =>
             options.UseNpgsql(configuration.GetConnectionString("DefaultConnection")));
 
-        services.AddSingleton<IPacienteRepositorio, PacienteRepositorioEmMemoria>();
+        services.AddScoped<IPacienteRepositorio, PacienteRepositorioEf>();
         services.AddSingleton<IProfissionalRepositorio, ProfissionalRepositorioEmMemoria>();
         services.AddSingleton<IAgendamentoRepositorio, AgendamentoRepositorioEmMemoria>();
         services.AddSingleton<ICheckInAtendimentoRepositorio, CheckInAtendimentoRepositorioEmMemoria>();
