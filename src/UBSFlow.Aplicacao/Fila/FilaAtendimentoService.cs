@@ -1,7 +1,9 @@
 using UBSFlow.Aplicacao.Agenda;
 using UBSFlow.Aplicacao.Comum;
+using UBSFlow.Aplicacao.Triagens;
 using UBSFlow.Dominio.Agenda;
 using UBSFlow.Dominio.Fila;
+using UBSFlow.Dominio.Triagens;
 
 namespace UBSFlow.Aplicacao.Fila;
 
@@ -9,13 +11,16 @@ public class FilaAtendimentoService
 {
     private readonly ICheckInAtendimentoRepositorio checkInRepositorio;
     private readonly IAgendamentoRepositorio agendamentoRepositorio;
+    private readonly ITriagemRepositorio triagemRepositorio;
 
     public FilaAtendimentoService(
         ICheckInAtendimentoRepositorio checkInRepositorio,
-        IAgendamentoRepositorio agendamentoRepositorio)
+        IAgendamentoRepositorio agendamentoRepositorio,
+        ITriagemRepositorio triagemRepositorio)
     {
         this.checkInRepositorio = checkInRepositorio;
         this.agendamentoRepositorio = agendamentoRepositorio;
+        this.triagemRepositorio = triagemRepositorio;
     }
 
     public CheckInAtendimentoResponse CriarCheckIn(CriarCheckInRequest request)
@@ -50,22 +55,45 @@ public class FilaAtendimentoService
 
         checkInRepositorio.Adicionar(checkIn);
 
-        return MapearCheckIn(checkIn);
+        return MapearCheckIn(checkIn, null);
     }
 
     public IReadOnlyCollection<CheckInAtendimentoResponse> ListarFila(ListarFilaRequest request)
     {
         var data = request.Data ?? DateOnly.FromDateTime(DateTime.Today);
 
+        var triagensPorCheckIn = triagemRepositorio
+            .Listar()
+            .ToDictionary(triagem => triagem.CheckInId);
+
         return checkInRepositorio
             .Listar()
             .Where(checkIn => DateOnly.FromDateTime(checkIn.RealizadoEm.LocalDateTime) == data)
-            .OrderBy(checkIn => checkIn.RealizadoEm)
-            .Select(MapearCheckIn)
+            .Select(checkIn =>
+            {
+                triagensPorCheckIn.TryGetValue(checkIn.Id, out var triagem);
+
+                return MapearCheckIn(checkIn, triagem?.ClassificacaoRisco);
+            })
+            .OrderBy(response => ObterPrioridadeStatus(response.Status))
+            .ThenByDescending(response => response.ClassificacaoRisco ?? 0)
+            .ThenBy(response => response.RealizadoEm)
             .ToList();
     }
 
-    private static CheckInAtendimentoResponse MapearCheckIn(CheckInAtendimento checkIn)
+    private static int ObterPrioridadeStatus(StatusFilaAtendimento status)
+    {
+        return status switch
+        {
+            StatusFilaAtendimento.AguardandoAtendimento => 0,
+            StatusFilaAtendimento.AguardandoTriagem => 1,
+            _ => 2
+        };
+    }
+
+    private static CheckInAtendimentoResponse MapearCheckIn(
+        CheckInAtendimento checkIn,
+        ClassificacaoRisco? classificacaoRisco)
     {
         return new CheckInAtendimentoResponse(
             checkIn.Id,
@@ -73,6 +101,7 @@ public class FilaAtendimentoService
             checkIn.PacienteId,
             checkIn.ProfissionalId,
             checkIn.RealizadoEm,
-            checkIn.Status);
+            checkIn.Status,
+            classificacaoRisco);
     }
 }

@@ -43,4 +43,6 @@ GET /fila?data=2026-07-12
 - agendamento informado precisa existir;
 - agendamento cancelado nao pode receber check-in;
 - nao permite check-in duplicado para o mesmo agendamento;
-- check-in entra na fila com status `AguardandoTriagem`.
+- check-in entra na fila com status `AguardandoTriagem`;
+- pacientes ja triados e aguardando atendimento aparecem antes dos pacientes aguardando triagem;
+- entre pacientes aguardando atendimento, a fila prioriza a maior classificacao de risco.
