@@ -34,7 +34,7 @@ public static class DependencyInjection
         services.AddScoped<ICheckInAtendimentoRepositorio, CheckInAtendimentoRepositorioEf>();
         services.AddScoped<ITriagemRepositorio, TriagemRepositorioEf>();
         services.AddScoped<IAtendimentoRepositorio, AtendimentoRepositorioEf>();
-        services.AddSingleton<IAuditoriaRepositorio, AuditoriaRepositorioEmMemoria>();
+        services.AddScoped<IAuditoriaRepositorio, AuditoriaRepositorioEf>();
 
         return services;
     }
