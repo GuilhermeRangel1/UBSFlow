@@ -40,9 +40,9 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "/api";
 async function parseError(response: Response) {
   try {
     const body = await response.json();
-    return body.mensagem ?? "Nao foi possivel concluir a operacao.";
+    return body.mensagem ?? "Não foi possível concluir a operação.";
   } catch {
-    return "Nao foi possivel concluir a operacao.";
+    return "Não foi possível concluir a operação.";
   }
 }
 
