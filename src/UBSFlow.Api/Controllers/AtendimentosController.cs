@@ -41,4 +41,21 @@ public class AtendimentosController : ControllerBase
             return BadRequest(new { mensagem = exception.Message });
         }
     }
+
+    [HttpPatch("{id:guid}/finalizar")]
+    public IActionResult Finalizar(Guid id, FinalizarAtendimentoRequest request)
+    {
+        try
+        {
+            return Ok(atendimentoService.Finalizar(id, request));
+        }
+        catch (InvalidOperationException exception)
+        {
+            return Conflict(new { mensagem = exception.Message });
+        }
+        catch (ValidacaoException exception)
+        {
+            return BadRequest(new { mensagem = exception.Message });
+        }
+    }
 }

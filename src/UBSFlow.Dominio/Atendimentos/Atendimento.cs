@@ -35,4 +35,11 @@ public class Atendimento : Entidade
     public string? Prescricao { get; private set; }
     public string? Encaminhamento { get; private set; }
     public DateTimeOffset IniciadoEm { get; private set; }
+    public DateTimeOffset? FinalizadoEm { get; private set; }
+
+    public void Finalizar(DateTimeOffset finalizadoEm)
+    {
+        FinalizadoEm = finalizadoEm;
+        MarcarComoAtualizada();
+    }
 }

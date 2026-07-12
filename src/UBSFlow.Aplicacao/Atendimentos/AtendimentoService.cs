@@ -64,6 +64,40 @@ public class AtendimentoService
         return atendimento is null ? null : MapearAtendimento(atendimento);
     }
 
+    public AtendimentoResponse Finalizar(Guid id, FinalizarAtendimentoRequest request)
+    {
+        var atendimento = atendimentoRepositorio.ObterPorId(id);
+
+        if (atendimento is null)
+        {
+            throw new ValidacaoException("Atendimento informado nao existe.");
+        }
+
+        if (atendimento.FinalizadoEm is not null)
+        {
+            throw new InvalidOperationException("Atendimento ja esta finalizado.");
+        }
+
+        var checkIn = checkInRepositorio.ObterPorId(atendimento.CheckInId);
+
+        if (checkIn is null)
+        {
+            throw new ValidacaoException("Check-in do atendimento nao existe.");
+        }
+
+        var finalizadoEm = request.FinalizadoEm ?? DateTimeOffset.UtcNow;
+
+        if (finalizadoEm < atendimento.IniciadoEm)
+        {
+            throw new ValidacaoException("Horario de finalizacao nao pode ser anterior ao inicio do atendimento.");
+        }
+
+        atendimento.Finalizar(finalizadoEm);
+        checkIn.FinalizarAtendimento();
+
+        return MapearAtendimento(atendimento);
+    }
+
     private static void ValidarRequest(CriarAtendimentoRequest request)
     {
         if (request.CheckInId == Guid.Empty)
@@ -99,6 +133,7 @@ public class AtendimentoService
             atendimento.Conduta,
             atendimento.Prescricao,
             atendimento.Encaminhamento,
-            atendimento.IniciadoEm);
+            atendimento.IniciadoEm,
+            atendimento.FinalizadoEm);
     }
 }

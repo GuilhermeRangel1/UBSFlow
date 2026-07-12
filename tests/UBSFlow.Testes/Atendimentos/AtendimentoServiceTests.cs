@@ -77,6 +77,66 @@ public class AtendimentoServiceTests
         Assert.Equal("Queixa e obrigatoria.", exception.Message);
     }
 
+    [Fact]
+    public void Finalizar_DeveFinalizarAtendimentoEMoverFilaParaFinalizado()
+    {
+        var contexto = CriarContexto();
+        var checkIn = CriarCheckInAguardandoAtendimento();
+        contexto.CheckIns.Adicionar(checkIn);
+        var atendimento = contexto.Service.Criar(CriarRequest(checkIn.Id));
+        var finalizadoEm = new DateTimeOffset(2026, 7, 12, 10, 30, 0, TimeSpan.FromHours(-3));
+
+        var atendimentoFinalizado = contexto.Service.Finalizar(
+            atendimento.Id,
+            new FinalizarAtendimentoRequest(finalizadoEm));
+
+        Assert.Equal(finalizadoEm, atendimentoFinalizado.FinalizadoEm);
+        Assert.Equal(StatusFilaAtendimento.Finalizado, checkIn.Status);
+    }
+
+    [Fact]
+    public void Finalizar_NaoDevePermitirAtendimentoInexistente()
+    {
+        var contexto = CriarContexto();
+
+        var exception = Assert.Throws<ValidacaoException>(() =>
+            contexto.Service.Finalizar(Guid.NewGuid(), new FinalizarAtendimentoRequest()));
+
+        Assert.Equal("Atendimento informado nao existe.", exception.Message);
+    }
+
+    [Fact]
+    public void Finalizar_NaoDevePermitirHorarioAnteriorAoInicio()
+    {
+        var contexto = CriarContexto();
+        var checkIn = CriarCheckInAguardandoAtendimento();
+        contexto.CheckIns.Adicionar(checkIn);
+        var atendimento = contexto.Service.Criar(CriarRequest(checkIn.Id));
+        var finalizadoEm = new DateTimeOffset(2026, 7, 12, 9, 30, 0, TimeSpan.FromHours(-3));
+
+        var exception = Assert.Throws<ValidacaoException>(() =>
+            contexto.Service.Finalizar(atendimento.Id, new FinalizarAtendimentoRequest(finalizadoEm)));
+
+        Assert.Equal("Horario de finalizacao nao pode ser anterior ao inicio do atendimento.", exception.Message);
+    }
+
+    [Fact]
+    public void Finalizar_NaoDevePermitirFinalizarDuasVezes()
+    {
+        var contexto = CriarContexto();
+        var checkIn = CriarCheckInAguardandoAtendimento();
+        contexto.CheckIns.Adicionar(checkIn);
+        var atendimento = contexto.Service.Criar(CriarRequest(checkIn.Id));
+        var request = new FinalizarAtendimentoRequest(
+            new DateTimeOffset(2026, 7, 12, 10, 30, 0, TimeSpan.FromHours(-3)));
+        contexto.Service.Finalizar(atendimento.Id, request);
+
+        var exception = Assert.Throws<InvalidOperationException>(() =>
+            contexto.Service.Finalizar(atendimento.Id, request));
+
+        Assert.Equal("Atendimento ja esta finalizado.", exception.Message);
+    }
+
     private static CriarAtendimentoRequest CriarRequest(Guid checkInId)
     {
         return new CriarAtendimentoRequest(

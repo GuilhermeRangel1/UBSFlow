@@ -26,6 +26,17 @@ Content-Type: application/json
 GET /atendimentos/{id}
 ```
 
+### Finalizar atendimento
+
+```http
+PATCH /atendimentos/{id}/finalizar
+Content-Type: application/json
+
+{
+  "finalizadoEm": "2026-07-12T10:30:00-03:00"
+}
+```
+
 ## Regras iniciais
 
 - check-in e obrigatorio;
@@ -33,4 +44,8 @@ GET /atendimentos/{id}
 - check-in precisa estar `AguardandoAtendimento`;
 - nao permite iniciar atendimento duas vezes para o mesmo check-in;
 - queixa, hipotese diagnostica e conduta sao obrigatorias;
-- ao iniciar atendimento, a fila muda para `EmAtendimento`.
+- ao iniciar atendimento, a fila muda para `EmAtendimento`;
+- nao permite finalizar atendimento inexistente;
+- nao permite finalizar duas vezes;
+- horario de finalizacao nao pode ser anterior ao inicio;
+- ao finalizar atendimento, a fila muda para `Finalizado`.

@@ -40,4 +40,10 @@ public class CheckInAtendimento : Entidade
         Status = StatusFilaAtendimento.EmAtendimento;
         MarcarComoAtualizada();
     }
+
+    public void FinalizarAtendimento()
+    {
+        Status = StatusFilaAtendimento.Finalizado;
+        MarcarComoAtualizada();
+    }
 }

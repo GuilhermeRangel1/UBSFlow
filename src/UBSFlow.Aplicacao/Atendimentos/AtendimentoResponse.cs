@@ -10,4 +10,5 @@ public sealed record AtendimentoResponse(
     string Conduta,
     string? Prescricao,
     string? Encaminhamento,
-    DateTimeOffset IniciadoEm);
+    DateTimeOffset IniciadoEm,
+    DateTimeOffset? FinalizadoEm);
