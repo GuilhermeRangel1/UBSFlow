@@ -714,7 +714,7 @@ function PortfolioLanding({
           <strong>UBSFlow</strong>
         </div>
         <div className="portfolio-links">
-          <a href="#produto">Produto</a>
+          <a href="#plataforma">Plataforma</a>
           <a href="#acesso">Acesso</a>
         </div>
       </nav>
@@ -729,7 +729,7 @@ function PortfolioLanding({
           </p>
           <div className="portfolio-actions">
             <a className="landing-primary" href="#acesso">Entrar</a>
-            <a className="landing-secondary" href="#produto">Ver produto</a>
+            <a className="landing-secondary" href="#plataforma">Conhecer</a>
           </div>
         </div>
 
@@ -774,7 +774,7 @@ function PortfolioLanding({
         </div>
       </section>
 
-      <section className="portfolio-section" id="produto">
+      <section className="portfolio-section" id="plataforma">
         <div className="section-heading">
           <span>Por que existe</span>
           <h2>Menos espera, mais clareza, melhor continuidade.</h2>
