@@ -4,6 +4,11 @@ namespace UBSFlow.Dominio.Triagens;
 
 public class Triagem : Entidade
 {
+    private Triagem()
+    {
+        Sintomas = string.Empty;
+    }
+
     public Triagem(
         Guid checkInId,
         Guid pacienteId,

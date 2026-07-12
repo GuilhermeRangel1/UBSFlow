@@ -4,6 +4,10 @@ namespace UBSFlow.Dominio.Fila;
 
 public class CheckInAtendimento : Entidade
 {
+    private CheckInAtendimento()
+    {
+    }
+
     public CheckInAtendimento(
         Guid agendamentoId,
         Guid pacienteId,

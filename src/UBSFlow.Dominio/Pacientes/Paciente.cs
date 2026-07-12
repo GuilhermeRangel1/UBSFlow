@@ -4,6 +4,13 @@ namespace UBSFlow.Dominio.Pacientes;
 
 public class Paciente : Entidade
 {
+    private Paciente()
+    {
+        Nome = string.Empty;
+        Cpf = string.Empty;
+        Telefone = string.Empty;
+    }
+
     public Paciente(
         string nome,
         string cpf,

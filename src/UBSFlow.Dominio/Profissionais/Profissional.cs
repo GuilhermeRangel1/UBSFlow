@@ -4,6 +4,12 @@ namespace UBSFlow.Dominio.Profissionais;
 
 public class Profissional : Entidade
 {
+    private Profissional()
+    {
+        Nome = string.Empty;
+        Disponibilidades = [];
+    }
+
     public Profissional(
         string nome,
         PapelProfissional papel,

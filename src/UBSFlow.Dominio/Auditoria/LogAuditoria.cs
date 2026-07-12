@@ -4,6 +4,13 @@ namespace UBSFlow.Dominio.Auditoria;
 
 public class LogAuditoria : Entidade
 {
+    private LogAuditoria()
+    {
+        Entidade = string.Empty;
+        Usuario = string.Empty;
+        Descricao = string.Empty;
+    }
+
     public LogAuditoria(
         AcaoAuditoria acao,
         string entidade,

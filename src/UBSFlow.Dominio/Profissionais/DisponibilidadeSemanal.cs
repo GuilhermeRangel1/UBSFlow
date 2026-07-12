@@ -2,6 +2,10 @@ namespace UBSFlow.Dominio.Profissionais;
 
 public class DisponibilidadeSemanal
 {
+    private DisponibilidadeSemanal()
+    {
+    }
+
     public DisponibilidadeSemanal(
         DayOfWeek diaSemana,
         TimeOnly horaInicio,

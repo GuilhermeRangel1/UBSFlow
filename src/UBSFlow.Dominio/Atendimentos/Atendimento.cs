@@ -4,6 +4,13 @@ namespace UBSFlow.Dominio.Atendimentos;
 
 public class Atendimento : Entidade
 {
+    private Atendimento()
+    {
+        Queixa = string.Empty;
+        HipoteseDiagnostica = string.Empty;
+        Conduta = string.Empty;
+    }
+
     public Atendimento(
         Guid checkInId,
         Guid pacienteId,

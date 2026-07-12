@@ -4,6 +4,10 @@ namespace UBSFlow.Dominio.Agenda;
 
 public class Agendamento : Entidade
 {
+    private Agendamento()
+    {
+    }
+
     public Agendamento(
         Guid pacienteId,
         Guid profissionalId,
