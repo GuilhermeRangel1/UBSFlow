@@ -8,4 +8,5 @@ public interface IAtendimentoRepositorio
     Atendimento? ObterPorId(Guid id);
     Atendimento? ObterPorCheckInId(Guid checkInId);
     void Adicionar(Atendimento atendimento);
+    void SalvarAlteracoes();
 }

@@ -38,3 +38,4 @@ O proximo passo e trocar os repositorios por implementacoes com EF Core, um modu
 - Agendamentos.
 - Check-ins/fila.
 - Triagens.
+- Atendimentos.

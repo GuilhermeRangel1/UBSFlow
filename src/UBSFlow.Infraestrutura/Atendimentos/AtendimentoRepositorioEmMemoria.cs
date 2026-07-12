@@ -26,4 +26,8 @@ public class AtendimentoRepositorioEmMemoria : IAtendimentoRepositorio
     {
         Atendimentos.Add(atendimento);
     }
+
+    public void SalvarAlteracoes()
+    {
+    }
 }

@@ -99,6 +99,7 @@ public class AtendimentoService
         }
 
         atendimento.Finalizar(finalizadoEm);
+        atendimentoRepositorio.SalvarAlteracoes();
         checkIn.FinalizarAtendimento();
         checkInRepositorio.SalvarAlteracoes();
         auditoriaService?.Registrar(

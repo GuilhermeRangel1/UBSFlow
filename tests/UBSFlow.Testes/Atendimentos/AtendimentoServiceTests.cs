@@ -196,6 +196,10 @@ public class AtendimentoServiceTests
         {
             atendimentos.Add(atendimento);
         }
+
+        public void SalvarAlteracoes()
+        {
+        }
     }
 
     private sealed class CheckInRepositorioFake : ICheckInAtendimentoRepositorio

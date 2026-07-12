@@ -134,6 +134,7 @@ public class RelatorioServiceTests
         public Atendimento? ObterPorCheckInId(Guid checkInId) =>
             atendimentos.FirstOrDefault(atendimento => atendimento.CheckInId == checkInId);
         public void Adicionar(Atendimento atendimento) => atendimentos.Add(atendimento);
+        public void SalvarAlteracoes() { }
     }
 
     private sealed class TriagemRepositorioFake : ITriagemRepositorio
