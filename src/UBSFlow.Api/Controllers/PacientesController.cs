@@ -16,9 +16,11 @@ public class PacientesController : ControllerBase
     }
 
     [HttpGet]
-    public IActionResult Listar()
+    public IActionResult Listar([FromQuery] string? nome, [FromQuery] string? cpf)
     {
-        return Ok(pacienteService.Listar());
+        var request = new ListarPacientesRequest(nome, cpf);
+
+        return Ok(pacienteService.Listar(request));
     }
 
     [HttpGet("{id:guid}")]

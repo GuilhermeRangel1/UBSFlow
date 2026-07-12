@@ -93,6 +93,44 @@ public class PacienteServiceTests
         Assert.Equal("Data de nascimento nao pode estar no futuro.", exception.Message);
     }
 
+    [Fact]
+    public void Listar_DeveFiltrarPorNome()
+    {
+        var repositorio = new PacienteRepositorioFake();
+        var service = new PacienteService(repositorio);
+        service.Criar(CriarRequest("Maria Silva", "12345678901"));
+        service.Criar(CriarRequest("Joao Santos", "98765432100"));
+
+        var pacientes = service.Listar(new ListarPacientesRequest("maria", null));
+
+        var paciente = Assert.Single(pacientes);
+        Assert.Equal("Maria Silva", paciente.Nome);
+    }
+
+    [Fact]
+    public void Listar_DeveFiltrarPorCpf()
+    {
+        var repositorio = new PacienteRepositorioFake();
+        var service = new PacienteService(repositorio);
+        service.Criar(CriarRequest("Maria Silva", "12345678901"));
+        service.Criar(CriarRequest("Joao Santos", "98765432100"));
+
+        var pacientes = service.Listar(new ListarPacientesRequest(null, "98765432100"));
+
+        var paciente = Assert.Single(pacientes);
+        Assert.Equal("Joao Santos", paciente.Nome);
+    }
+
+    private static CriarPacienteRequest CriarRequest(string nome, string cpf)
+    {
+        return new CriarPacienteRequest(
+            nome,
+            cpf,
+            new DateOnly(1990, 5, 12),
+            "11999990000",
+            null);
+    }
+
     private sealed class PacienteRepositorioFake : IPacienteRepositorio
     {
         private readonly List<Paciente> pacientes = [];

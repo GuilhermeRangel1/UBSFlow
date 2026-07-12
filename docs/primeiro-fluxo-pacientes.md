@@ -50,6 +50,13 @@ http://localhost:5000/swagger
 GET /pacientes
 ```
 
+Tambem e possivel filtrar por nome ou CPF:
+
+```http
+GET /pacientes?nome=maria
+GET /pacientes?cpf=12345678901
+```
+
 ### Buscar paciente por id
 
 ```http

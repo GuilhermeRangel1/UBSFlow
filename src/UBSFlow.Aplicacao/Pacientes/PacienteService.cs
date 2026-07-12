@@ -12,10 +12,22 @@ public class PacienteService
         this.pacienteRepositorio = pacienteRepositorio;
     }
 
-    public IReadOnlyCollection<PacienteResponse> Listar()
+    public IReadOnlyCollection<PacienteResponse> Listar(ListarPacientesRequest request)
     {
-        return pacienteRepositorio
-            .Listar()
+        var pacientes = pacienteRepositorio.Listar().AsEnumerable();
+
+        if (!string.IsNullOrWhiteSpace(request.Nome))
+        {
+            pacientes = pacientes.Where(paciente =>
+                paciente.Nome.Contains(request.Nome, StringComparison.OrdinalIgnoreCase));
+        }
+
+        if (!string.IsNullOrWhiteSpace(request.Cpf))
+        {
+            pacientes = pacientes.Where(paciente => paciente.Cpf == request.Cpf);
+        }
+
+        return pacientes
             .Select(MapearPaciente)
             .ToList();
     }
