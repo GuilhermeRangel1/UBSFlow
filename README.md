@@ -94,6 +94,12 @@ Suba o PostgreSQL:
 docker compose up -d
 ```
 
+Para subir API e PostgreSQL juntos via Docker:
+
+```bash
+docker compose up -d --build
+```
+
 Aplique as migrations:
 
 ```bash
