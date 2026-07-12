@@ -162,6 +162,58 @@ public class AgendamentoServiceTests
         Assert.Equal("Profissional ja possui agendamento neste horario.", exception.Message);
     }
 
+    [Fact]
+    public void Cancelar_DeveAlterarStatusERegistrarMotivo()
+    {
+        var contexto = CriarContexto();
+        var agendamento = contexto.Service.Criar(CriarRequest(contexto.Paciente.Id, contexto.Profissional.Id));
+        var request = new CancelarAgendamentoRequest("Paciente solicitou cancelamento.");
+
+        var agendamentoCancelado = contexto.Service.Cancelar(agendamento.Id, request);
+
+        Assert.Equal(StatusAgendamento.Cancelado, agendamentoCancelado.Status);
+        Assert.Equal("Paciente solicitou cancelamento.", agendamentoCancelado.MotivoCancelamento);
+    }
+
+    [Fact]
+    public void Cancelar_NaoDevePermitirMotivoVazio()
+    {
+        var contexto = CriarContexto();
+        var agendamento = contexto.Service.Criar(CriarRequest(contexto.Paciente.Id, contexto.Profissional.Id));
+        var request = new CancelarAgendamentoRequest("");
+
+        var exception = Assert.Throws<ValidacaoException>(() =>
+            contexto.Service.Cancelar(agendamento.Id, request));
+
+        Assert.Equal("Motivo do cancelamento e obrigatorio.", exception.Message);
+    }
+
+    [Fact]
+    public void Cancelar_NaoDevePermitirAgendamentoInexistente()
+    {
+        var contexto = CriarContexto();
+        var request = new CancelarAgendamentoRequest("Paciente solicitou cancelamento.");
+
+        var exception = Assert.Throws<ValidacaoException>(() =>
+            contexto.Service.Cancelar(Guid.NewGuid(), request));
+
+        Assert.Equal("Agendamento informado nao existe.", exception.Message);
+    }
+
+    [Fact]
+    public void Cancelar_NaoDevePermitirCancelarDuasVezes()
+    {
+        var contexto = CriarContexto();
+        var agendamento = contexto.Service.Criar(CriarRequest(contexto.Paciente.Id, contexto.Profissional.Id));
+        var request = new CancelarAgendamentoRequest("Paciente solicitou cancelamento.");
+        contexto.Service.Cancelar(agendamento.Id, request);
+
+        var exception = Assert.Throws<InvalidOperationException>(() =>
+            contexto.Service.Cancelar(agendamento.Id, request));
+
+        Assert.Equal("Agendamento ja esta cancelado.", exception.Message);
+    }
+
     private static CriarAgendamentoRequest CriarRequest(
         Guid pacienteId,
         Guid profissionalId)

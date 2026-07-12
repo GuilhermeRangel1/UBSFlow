@@ -56,6 +56,17 @@ Content-Type: application/json
 }
 ```
 
+### Cancelar agendamento
+
+```http
+PATCH /agendamentos/{id}/cancelar
+Content-Type: application/json
+
+{
+  "motivo": "Paciente solicitou cancelamento."
+}
+```
+
 ## Regras iniciais
 
 - paciente e obrigatorio;
@@ -64,4 +75,5 @@ Content-Type: application/json
 - profissional informado precisa existir;
 - horario final precisa ser maior que horario inicial;
 - nao permite conflito de horario para o mesmo profissional;
-- agendamento cancelado nao pode ser remarcado.
+- agendamento cancelado nao pode ser remarcado;
+- cancelamento exige motivo obrigatorio.

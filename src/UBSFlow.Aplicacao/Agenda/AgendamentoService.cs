@@ -127,6 +127,31 @@ public class AgendamentoService
         return MapearAgendamento(agendamento);
     }
 
+    public AgendamentoResponse Cancelar(Guid id, CancelarAgendamentoRequest request)
+    {
+        if (string.IsNullOrWhiteSpace(request.Motivo))
+        {
+            throw new ValidacaoException("Motivo do cancelamento e obrigatorio.");
+        }
+
+        var agendamento = agendamentoRepositorio.ObterPorId(id);
+
+        if (agendamento is null)
+        {
+            throw new ValidacaoException("Agendamento informado nao existe.");
+        }
+
+        if (agendamento.Status == StatusAgendamento.Cancelado)
+        {
+            throw new InvalidOperationException("Agendamento ja esta cancelado.");
+        }
+
+        agendamento.Cancelar(request.Motivo);
+
+        return MapearAgendamento(agendamento);
+    }
+
+
     private bool ExisteConflitoDeHorario(CriarAgendamentoRequest request)
     {
         return ExisteConflitoDeHorario(
@@ -194,6 +219,7 @@ public class AgendamentoService
             agendamento.ProfissionalId,
             agendamento.Inicio,
             agendamento.Fim,
-            agendamento.Status);
+            agendamento.Status,
+            agendamento.MotivoCancelamento);
     }
 }

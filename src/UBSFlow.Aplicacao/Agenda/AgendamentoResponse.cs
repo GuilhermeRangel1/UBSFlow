@@ -8,4 +8,5 @@ public sealed record AgendamentoResponse(
     Guid ProfissionalId,
     DateTimeOffset Inicio,
     DateTimeOffset Fim,
-    StatusAgendamento Status);
+    StatusAgendamento Status,
+    string? MotivoCancelamento);

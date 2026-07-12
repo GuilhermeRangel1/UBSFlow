@@ -83,4 +83,21 @@ public class AgendamentosController : ControllerBase
             return BadRequest(new { mensagem = exception.Message });
         }
     }
+
+    [HttpPatch("{id:guid}/cancelar")]
+    public IActionResult Cancelar(Guid id, CancelarAgendamentoRequest request)
+    {
+        try
+        {
+            return Ok(agendamentoService.Cancelar(id, request));
+        }
+        catch (InvalidOperationException exception)
+        {
+            return Conflict(new { mensagem = exception.Message });
+        }
+        catch (ValidacaoException exception)
+        {
+            return BadRequest(new { mensagem = exception.Message });
+        }
+    }
 }
