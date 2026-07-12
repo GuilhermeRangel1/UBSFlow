@@ -76,6 +76,10 @@ O projeto possui workflow de GitHub Actions em `.github/workflows/dotnet-ci.yml`
 - `dotnet build`
 - `dotnet test`
 
+## Logs
+
+A API usa Serilog para logs estruturados no console e logs automaticos de requisicoes HTTP.
+
 ## Como Rodar Localmente
 
 Restaure os pacotes:
