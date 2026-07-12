@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.EntityFrameworkCore;
 using UBSFlow.Aplicacao.Agenda;
 using UBSFlow.Aplicacao.Auditoria;
 using UBSFlow.Aplicacao.Atendimentos;
@@ -12,6 +13,7 @@ using UBSFlow.Infraestrutura.Auditoria;
 using UBSFlow.Infraestrutura.Atendimentos;
 using UBSFlow.Infraestrutura.Fila;
 using UBSFlow.Infraestrutura.Pacientes;
+using UBSFlow.Infraestrutura.Persistencia;
 using UBSFlow.Infraestrutura.Profissionais;
 using UBSFlow.Infraestrutura.Triagens;
 
@@ -23,7 +25,8 @@ public static class DependencyInjection
         this IServiceCollection services,
         IConfiguration configuration)
     {
-        _ = configuration;
+        services.AddDbContext<UbsFlowDbContext>(options =>
+            options.UseNpgsql(configuration.GetConnectionString("DefaultConnection")));
 
         services.AddSingleton<IPacienteRepositorio, PacienteRepositorioEmMemoria>();
         services.AddSingleton<IProfissionalRepositorio, ProfissionalRepositorioEmMemoria>();
