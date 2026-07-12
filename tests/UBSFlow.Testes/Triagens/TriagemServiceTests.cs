@@ -73,6 +73,60 @@ public class TriagemServiceTests
         Assert.Equal("Temperatura deve estar entre 30 e 45 graus.", exception.Message);
     }
 
+    [Fact]
+    public void Criar_DeveClassificarComoVermelhoQuandoTemperaturaForCritica()
+    {
+        var contexto = CriarContexto();
+        var checkIn = CriarCheckIn();
+        contexto.CheckIns.Adicionar(checkIn);
+        var request = CriarRequest(checkIn.Id) with
+        {
+            Temperatura = 40,
+            ClassificacaoRisco = ClassificacaoRisco.Verde
+        };
+
+        var triagem = contexto.Service.Criar(request);
+
+        Assert.Equal(ClassificacaoRisco.Vermelho, triagem.ClassificacaoRisco);
+    }
+
+    [Fact]
+    public void Criar_DeveClassificarComoVermelhoQuandoSintomaForCritico()
+    {
+        var contexto = CriarContexto();
+        var checkIn = CriarCheckIn();
+        contexto.CheckIns.Adicionar(checkIn);
+        var request = CriarRequest(checkIn.Id) with
+        {
+            Sintomas = "Paciente com dor no peito e falta de ar",
+            ClassificacaoRisco = ClassificacaoRisco.Verde
+        };
+
+        var triagem = contexto.Service.Criar(request);
+
+        Assert.Equal(ClassificacaoRisco.Vermelho, triagem.ClassificacaoRisco);
+    }
+
+    [Fact]
+    public void Criar_DevePreservarClassificacaoInformadaQuandoElaForMaisGrave()
+    {
+        var contexto = CriarContexto();
+        var checkIn = CriarCheckIn();
+        contexto.CheckIns.Adicionar(checkIn);
+        var request = CriarRequest(checkIn.Id) with
+        {
+            Temperatura = 36.5m,
+            PressaoSistolica = 120,
+            PressaoDiastolica = 80,
+            FrequenciaCardiaca = 80,
+            ClassificacaoRisco = ClassificacaoRisco.Laranja
+        };
+
+        var triagem = contexto.Service.Criar(request);
+
+        Assert.Equal(ClassificacaoRisco.Laranja, triagem.ClassificacaoRisco);
+    }
+
     private static CriarTriagemRequest CriarRequest(Guid checkInId)
     {
         return new CriarTriagemRequest(

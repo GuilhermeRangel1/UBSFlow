@@ -40,6 +40,10 @@ public class TriagemService
         }
 
         checkIn.IniciarTriagem();
+        var classificacaoCalculada = ClassificadorRiscoTriagem.Classificar(request);
+        var classificacaoFinal = ClassificadorRiscoTriagem.ObterMaisGrave(
+            request.ClassificacaoRisco,
+            classificacaoCalculada);
 
         var triagem = new Triagem(
             checkIn.Id,
@@ -49,7 +53,7 @@ public class TriagemService
             request.PressaoDiastolica,
             request.FrequenciaCardiaca,
             request.Sintomas,
-            request.ClassificacaoRisco,
+            classificacaoFinal,
             request.Observacoes,
             request.RealizadaEm ?? DateTimeOffset.UtcNow);
 

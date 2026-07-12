@@ -36,4 +36,13 @@ GET /triagens/{id}
 - nao permite triagem duplicada para o mesmo check-in;
 - sinais vitais precisam ter valores validos;
 - sintomas sao obrigatorios;
+- classificacao de risco e calculada automaticamente com base em sinais vitais e sintomas;
+- se a classificacao informada for mais grave que a calculada, a API preserva a mais grave;
 - ao concluir a triagem, a fila muda para `AguardandoAtendimento`.
+
+## Classificacao automatica inicial
+
+- `Vermelho`: sintomas criticos, febre a partir de 40, pressao muito alta ou frequencia cardiaca a partir de 130.
+- `Laranja`: febre a partir de 39, pressao alta ou frequencia cardiaca a partir de 120.
+- `Amarelo`: febre a partir de 37.8, pressao levemente alta ou frequencia cardiaca a partir de 100.
+- `Verde`: sem sinais de alerta inicial.
