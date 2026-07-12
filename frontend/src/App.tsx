@@ -715,7 +715,6 @@ function PortfolioLanding({
         </div>
         <div className="portfolio-links">
           <a href="#produto">Produto</a>
-          <a href="#fluxo">Fluxo</a>
           <a href="#acesso">Acesso</a>
         </div>
       </nav>
@@ -730,7 +729,7 @@ function PortfolioLanding({
           </p>
           <div className="portfolio-actions">
             <a className="landing-primary" href="#acesso">Entrar</a>
-            <a className="landing-secondary" href="#fluxo">Ver fluxo</a>
+            <a className="landing-secondary" href="#produto">Ver produto</a>
           </div>
         </div>
 
@@ -796,13 +795,6 @@ function PortfolioLanding({
             <strong>Controle</strong>
             <p>Cada equipe atua no seu espaço.</p>
           </article>
-        </div>
-      </section>
-
-      <section className="story-section" id="fluxo">
-        <div className="section-heading">
-          <span>Jornada</span>
-          <h2>Cada etapa abre a próxima.</h2>
         </div>
         <div className="landing-flow">
           <article>
