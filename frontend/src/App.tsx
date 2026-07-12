@@ -527,7 +527,7 @@ export function App() {
 
       <section className="content app-content">
         {selectedModule.key === "visao-geral" && (
-          <HomeScreen modules={visibleModules} onNavigate={setActiveModule} userName={session.usuario.nome} />
+          <HomeScreen userName={session.usuario.nome} />
         )}
 
         {selectedModule.key === "pacientes" && (
@@ -650,34 +650,49 @@ function WorkPage({ children, title }: { children: ReactNode; title: string }) {
   );
 }
 
-function HomeScreen({
-  modules,
-  onNavigate,
-  userName
-}: {
-  modules: ModuleItem[];
-  onNavigate: (module: ModuleKey) => void;
-  userName: string;
-}) {
+function HomeScreen({ userName }: { userName: string }) {
   return (
     <div className="app-page home-page">
-      <section className="home-compact">
-        <span>Olá, {userName}</span>
-        <h1>Escolha uma área.</h1>
+      <section className="home-visual-panel">
+        <div className="home-copy">
+          <span>Olá, {userName}</span>
+          <h1>Central da unidade.</h1>
+          <p>Use o menu lateral para acessar cada área do atendimento.</p>
+        </div>
+
+        <div className="home-flow-line" aria-label="Fluxo de atendimento">
+          <article>
+            <CalendarClock size={22} />
+            <strong>Agenda</strong>
+          </article>
+          <article>
+            <ClipboardList size={22} />
+            <strong>Chegada</strong>
+          </article>
+          <article>
+            <HeartPulse size={22} />
+            <strong>Triagem</strong>
+          </article>
+          <article>
+            <Stethoscope size={22} />
+            <strong>Consulta</strong>
+          </article>
+          <article>
+            <BarChart3 size={22} />
+            <strong>Gestão</strong>
+          </article>
+        </div>
       </section>
 
-      <section className="drawer-grid" aria-label="Áreas disponíveis">
-        {modules
-          .filter((module) => module.key !== "visao-geral")
-          .map((module) => {
-            const Icon = module.icon;
-            return (
-              <button key={module.key} onClick={() => onNavigate(module.key)} type="button">
-                <Icon size={24} />
-                <strong>{module.title}</strong>
-              </button>
-            );
-          })}
+      <section className="home-image-band">
+        <img
+          alt="Equipe de saúde acompanhando atendimento"
+          src="https://images.unsplash.com/photo-1550831107-1553da8c8464?auto=format&fit=crop&w=1600&q=85"
+        />
+        <div>
+          <strong>Fluxo conectado</strong>
+          <span>Da chegada ao fechamento</span>
+        </div>
       </section>
     </div>
   );
