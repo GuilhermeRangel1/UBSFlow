@@ -141,6 +141,56 @@ const flowSteps = [
   { label: "Historico", icon: FileClock }
 ];
 
+const journeyStages: Array<{
+  key: ModuleKey;
+  label: string;
+  description: string;
+  metric: string;
+  tone: string;
+  icon: LucideIcon;
+}> = [
+  {
+    key: "agenda",
+    label: "Agendar",
+    description: "Horarios, remarcacoes e faltas",
+    metric: "12 marcados",
+    tone: "Recepcao",
+    icon: CalendarClock
+  },
+  {
+    key: "fila",
+    label: "Chegada",
+    description: "Check-in e ordem de entrada",
+    metric: "8 na fila",
+    tone: "Porta aberta",
+    icon: ClipboardList
+  },
+  {
+    key: "triagem",
+    label: "Triagem",
+    description: "Sinais vitais e risco",
+    metric: "3 prioridade",
+    tone: "Enfermagem",
+    icon: HeartPulse
+  },
+  {
+    key: "atendimentos",
+    label: "Consulta",
+    description: "Conduta e fechamento",
+    metric: "5 em curso",
+    tone: "Medico",
+    icon: Stethoscope
+  },
+  {
+    key: "relatorios",
+    label: "Gestao",
+    description: "Indicadores da unidade",
+    metric: "18 min espera",
+    tone: "Gestor",
+    icon: BarChart3
+  }
+];
+
 export function App() {
   const [activeModule, setActiveModule] = useState<ModuleKey>("visao-geral");
   const [usuario, setUsuario] = useState("medico");
@@ -171,7 +221,7 @@ export function App() {
       const response = await login(usuario, senha);
       setSession(response);
       setLoginStatus(`Sessao ativa para ${response.usuario.nome}`);
-      setActiveModule("pacientes");
+      setActiveModule("visao-geral");
     } catch (error) {
       setSession(null);
       setLoginStatus(error instanceof Error ? error.message : "Falha no login.");
@@ -297,35 +347,55 @@ export function App() {
       </aside>
 
       <section className="content">
-        <header className="hero">
-          <div className="hero-background" />
-          <div className="hero-content">
+        <header className="command-header">
+          <div>
             <div className="eyebrow">
               <ShieldCheck size={16} />
-              API REST .NET + PostgreSQL + RBAC
+              Fluxo operacional da unidade
             </div>
-            <h1>UBSFlow</h1>
+            <h1>Central de atendimento</h1>
             <p>
-              Uma interface operacional para acompanhar o fluxo real de atendimento:
-              agenda, chegada, triagem, consulta, historico e auditoria em uma UBS.
+              Cada area acompanha uma etapa da jornada do paciente, da agenda ao
+              encerramento do atendimento.
             </p>
-            <div className="hero-actions">
-              <button className="primary-action" onClick={() => setActiveModule("fila")} type="button">
-                Ver fila
-                <ArrowRight size={16} />
-              </button>
-              <button className="secondary-action" onClick={() => setActiveModule("relatorios")} type="button">
-                Indicadores
-              </button>
-            </div>
+          </div>
+          <div className="shift-card">
+            <span>Plantao atual</span>
+            <strong>{session ? session.usuario.papel : "Sem sessao"}</strong>
+            <small>{session ? session.usuario.nome : "Entre para operar os modulos"}</small>
           </div>
         </header>
 
+        <section className="journey-map" aria-label="Fluxo principal">
+          {journeyStages.map((stage, index) => {
+            const Icon = stage.icon;
+            const isActive = stage.key === activeModule;
+
+            return (
+              <button
+                className={isActive ? "journey-stage active" : "journey-stage"}
+                key={stage.key}
+                onClick={() => setActiveModule(stage.key)}
+                type="button"
+              >
+                <span className="stage-index">{String(index + 1).padStart(2, "0")}</span>
+                <span className="stage-icon">
+                  <Icon size={20} />
+                </span>
+                <strong>{stage.label}</strong>
+                <small>{stage.description}</small>
+                <em>{stage.metric}</em>
+                <span className="stage-tone">{stage.tone}</span>
+              </button>
+            );
+          })}
+        </section>
+
         <section className="metrics-grid" aria-label="Resumo operacional">
-          <Metric label="Atendimentos hoje" value="42" trend="+12%" />
-          <Metric label="Tempo medio espera" value="18 min" trend="-6 min" />
-          <Metric label="Triagens pendentes" value="7" trend="risco monitorado" />
-          <Metric label="Cancelamentos" value="3" trend="motivo obrigatorio" />
+          <Metric label="Atendimentos hoje" value={String(Math.max(42, pacientes.length))} trend="operacao ativa" />
+          <Metric label="Tempo medio espera" value="18 min" trend="fila monitorada" />
+          <Metric label="Triagens pendentes" value="7" trend="risco em ordem" />
+          <Metric label="Pacientes no cadastro" value={String(pacientes.length)} trend="dados persistidos" />
         </section>
 
         <section className="workspace">
@@ -355,6 +425,8 @@ export function App() {
                 setNovoPaciente={setNovoPaciente}
                 status={pacientesStatus}
               />
+            ) : activeModule === "visao-geral" ? (
+              <OverviewPanel onNavigate={setActiveModule} pacientes={pacientes.length} />
             ) : (
               <ModuleDetails selectedModule={selectedModule} />
             )}
@@ -437,6 +509,79 @@ function ModuleDetails({ selectedModule }: { selectedModule: ModuleItem }) {
   );
 }
 
+function OverviewPanel({
+  onNavigate,
+  pacientes
+}: {
+  onNavigate: (module: ModuleKey) => void;
+  pacientes: number;
+}) {
+  return (
+    <div className="overview-grid">
+      <section className="flow-board">
+        <div className="crud-heading">
+          <div>
+            <h3>Fluxo do dia</h3>
+            <p>Acompanhamento das etapas que mantem a UBS em movimento.</p>
+          </div>
+          <button className="primary-action" onClick={() => onNavigate("fila")} type="button">
+            Abrir fila
+            <ArrowRight size={16} />
+          </button>
+        </div>
+
+        <div className="queue-lanes">
+          <FlowLane label="Agendados" value="12" accent="blue" />
+          <FlowLane label="Aguardando triagem" value="7" accent="amber" />
+          <FlowLane label="Em atendimento" value="5" accent="green" />
+          <FlowLane label="Finalizados" value="18" accent="slate" />
+        </div>
+      </section>
+
+      <section className="quick-actions">
+        <button onClick={() => onNavigate("pacientes")} type="button">
+          <UserRound size={20} />
+          <span>
+            <strong>Cadastrar paciente</strong>
+            <small>{pacientes} paciente(s) visiveis na sessao</small>
+          </span>
+        </button>
+        <button onClick={() => onNavigate("agenda")} type="button">
+          <CalendarClock size={20} />
+          <span>
+            <strong>Organizar agenda</strong>
+            <small>Horarios e cancelamentos</small>
+          </span>
+        </button>
+        <button onClick={() => onNavigate("triagem")} type="button">
+          <HeartPulse size={20} />
+          <span>
+            <strong>Priorizar atendimento</strong>
+            <small>Classificacao de risco</small>
+          </span>
+        </button>
+      </section>
+    </div>
+  );
+}
+
+function FlowLane({
+  accent,
+  label,
+  value
+}: {
+  accent: "blue" | "amber" | "green" | "slate";
+  label: string;
+  value: string;
+}) {
+  return (
+    <article className={`flow-lane ${accent}`}>
+      <span>{label}</span>
+      <strong>{value}</strong>
+    </article>
+  );
+}
+
 function PacientesCrud({
   filtroCpf,
   filtroNome,
@@ -468,7 +613,7 @@ function PacientesCrud({
         <div className="crud-heading">
           <div>
             <h3>Buscar pacientes</h3>
-            <p>Consulta real no endpoint protegido `GET /pacientes`.</p>
+            <p>Localize cadastros antes de abrir a fila ou agendar retorno.</p>
           </div>
           <button className="secondary-action bordered" onClick={onBuscar} type="button">
             Atualizar
@@ -491,7 +636,7 @@ function PacientesCrud({
         <div className="crud-heading">
           <div>
             <h3>Cadastrar paciente</h3>
-            <p>Disponivel para ADMIN e RECEPCIONISTA.</p>
+            <p>Entrada inicial para recepcao e administracao da unidade.</p>
           </div>
           <button className="primary-action" disabled={!podeCriar} onClick={onCriar} type="button">
             Salvar

@@ -3,7 +3,7 @@
   font-family:
     Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
     sans-serif;
-  background: #eef2f5;
+  background: #edf3f2;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
 }
@@ -37,16 +37,14 @@ button:disabled {
   display: grid;
   grid-template-columns: 292px 1fr;
   background:
-    linear-gradient(90deg, rgba(238, 242, 245, 0.98), rgba(238, 242, 245, 0.92)),
-    url("https://images.unsplash.com/photo-1576091160550-2173dba999ef?auto=format&fit=crop&w=1800&q=80");
-  background-size: cover;
-  background-position: center;
+    radial-gradient(circle at 12% 8%, rgba(0, 109, 119, 0.14), transparent 28%),
+    linear-gradient(135deg, #f7fbfa 0%, #edf3f2 48%, #e8eef1 100%);
 }
 
 .sidebar {
   min-height: 100vh;
   padding: 22px;
-  background: rgba(255, 255, 255, 0.92);
+  background: rgba(255, 255, 255, 0.9);
   border-right: 1px solid rgba(101, 116, 139, 0.18);
   display: flex;
   flex-direction: column;
@@ -179,7 +177,72 @@ button:disabled {
   min-width: 0;
   padding: 28px;
   display: grid;
+  gap: 18px;
+}
+
+.command-header {
+  min-height: 248px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 280px;
+  align-items: end;
   gap: 22px;
+  overflow: hidden;
+  position: relative;
+  padding: 34px;
+  border-radius: 8px;
+  color: #ffffff;
+  background:
+    linear-gradient(135deg, rgba(3, 37, 47, 0.98), rgba(0, 109, 119, 0.78)),
+    url("https://images.unsplash.com/photo-1551190822-a9333d879b1f?auto=format&fit=crop&w=1800&q=80");
+  background-size: cover;
+  background-position: center;
+}
+
+.command-header::after {
+  content: "";
+  position: absolute;
+  inset: auto 0 0;
+  height: 78px;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.12), transparent);
+}
+
+.command-header > * {
+  position: relative;
+  z-index: 1;
+}
+
+.command-header h1 {
+  max-width: 780px;
+  margin: 18px 0 10px;
+  font-size: clamp(2.4rem, 5vw, 4.6rem);
+  line-height: 0.98;
+}
+
+.command-header p {
+  max-width: 720px;
+  margin: 0;
+  color: rgba(255, 255, 255, 0.84);
+  font-size: 1.05rem;
+  line-height: 1.58;
+}
+
+.shift-card {
+  padding: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.13);
+  backdrop-filter: blur(16px);
+  display: grid;
+  gap: 7px;
+}
+
+.shift-card span,
+.shift-card small {
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.shift-card strong {
+  font-size: 1.5rem;
 }
 
 .hero {
@@ -193,6 +256,85 @@ button:disabled {
     url("https://images.unsplash.com/photo-1586773860418-d37222d8fce3?auto=format&fit=crop&w=1800&q=80");
   background-size: cover;
   background-position: center;
+}
+
+.journey-map {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.journey-stage {
+  min-height: 172px;
+  position: relative;
+  display: grid;
+  align-content: start;
+  gap: 8px;
+  padding: 16px;
+  border: 1px solid rgba(101, 116, 139, 0.16);
+  border-radius: 8px;
+  color: #203247;
+  background: rgba(255, 255, 255, 0.88);
+  text-align: left;
+  overflow: hidden;
+}
+
+.journey-stage::before {
+  content: "";
+  position: absolute;
+  inset: auto 16px 0;
+  height: 4px;
+  background: #006d77;
+  opacity: 0.28;
+}
+
+.journey-stage:hover,
+.journey-stage.active {
+  border-color: rgba(0, 109, 119, 0.42);
+  background: #ffffff;
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
+  transform: translateY(-1px);
+}
+
+.stage-index {
+  color: #8b9aab;
+  font-size: 0.76rem;
+  font-weight: 900;
+}
+
+.stage-icon {
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  color: #ffffff;
+  background: #006d77;
+}
+
+.journey-stage strong {
+  font-size: 1.1rem;
+}
+
+.journey-stage small {
+  min-height: 38px;
+  color: #65748b;
+  line-height: 1.35;
+}
+
+.journey-stage em {
+  color: #05363b;
+  font-style: normal;
+  font-weight: 800;
+}
+
+.stage-tone {
+  width: fit-content;
+  padding: 5px 8px;
+  border-radius: 999px;
+  color: #05363b;
+  background: #d9f0ee;
+  font-size: 0.74rem;
+  font-weight: 800;
 }
 
 .hero-background {
@@ -255,6 +397,7 @@ button:disabled {
   padding: 18px;
   display: grid;
   gap: 8px;
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.04);
 }
 
 .metric-card strong {
@@ -271,6 +414,7 @@ button:disabled {
   padding: 22px;
   display: grid;
   gap: 22px;
+  box-shadow: 0 18px 44px rgba(15, 23, 42, 0.07);
 }
 
 .module-header {
@@ -352,6 +496,93 @@ button:disabled {
   background: #eef2f5;
   font-family: "Cascadia Code", "Fira Code", ui-monospace, monospace;
   font-size: 0.86rem;
+}
+
+.overview-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(280px, 0.6fr);
+  gap: 16px;
+}
+
+.flow-board,
+.quick-actions {
+  padding: 18px;
+  border: 1px solid #dbe3ea;
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.queue-lanes {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.flow-lane {
+  min-height: 112px;
+  display: grid;
+  align-content: space-between;
+  padding: 14px;
+  border-radius: 8px;
+  color: #ffffff;
+}
+
+.flow-lane span {
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 0.82rem;
+}
+
+.flow-lane strong {
+  font-size: 2rem;
+}
+
+.flow-lane.blue {
+  background: #245c7c;
+}
+
+.flow-lane.amber {
+  background: #936a18;
+}
+
+.flow-lane.green {
+  background: #006d77;
+}
+
+.flow-lane.slate {
+  background: #314156;
+}
+
+.quick-actions {
+  display: grid;
+  gap: 10px;
+}
+
+.quick-actions button {
+  min-height: 76px;
+  border: 1px solid #dbe3ea;
+  border-radius: 8px;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  color: #1d2433;
+  background: #f8fafc;
+  text-align: left;
+}
+
+.quick-actions button:hover {
+  border-color: rgba(0, 109, 119, 0.38);
+  background: #eef8f7;
+}
+
+.quick-actions span {
+  display: grid;
+  gap: 4px;
+}
+
+.quick-actions small {
+  color: #65748b;
 }
 
 .crud-stack {
@@ -486,8 +717,15 @@ button:disabled {
 
   .workspace,
   .details-grid,
+  .overview-grid,
   .form-grid,
   .form-grid.two-columns {
+    grid-template-columns: 1fr;
+  }
+
+  .command-header,
+  .journey-map,
+  .queue-lanes {
     grid-template-columns: 1fr;
   }
 
@@ -504,8 +742,14 @@ button:disabled {
 
   .nav-list,
   .metrics-grid,
+  .journey-map,
   .flow-strip {
     grid-template-columns: 1fr;
+  }
+
+  .command-header {
+    min-height: 420px;
+    padding: 26px;
   }
 
   .hero {
