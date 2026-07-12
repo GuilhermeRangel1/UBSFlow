@@ -1,5 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using UBSFlow.Aplicacao.Agenda;
+using UBSFlow.Aplicacao.Fila;
 using UBSFlow.Aplicacao.Pacientes;
 using UBSFlow.Aplicacao.Profissionais;
 
@@ -12,6 +13,7 @@ public static class DependencyInjection
         services.AddScoped<PacienteService>();
         services.AddScoped<ProfissionalService>();
         services.AddScoped<AgendamentoService>();
+        services.AddScoped<FilaAtendimentoService>();
 
         return services;
     }
