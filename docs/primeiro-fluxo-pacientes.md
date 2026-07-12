@@ -1,15 +1,15 @@
-# Primeiro fluxo: pacientes em memoria
+# Primeiro fluxo: pacientes
 
 Este passo cria a primeira funcionalidade real da API: cadastrar, listar e buscar pacientes.
 
-Por enquanto ainda nao existe banco de dados. Os pacientes ficam guardados em uma lista em memoria, parecida com uma lista de registros em C. Quando a API for reiniciada, os dados somem. Isso e intencional para facilitar o aprendizado antes de entrar em PostgreSQL e Entity Framework.
+Na versao inicial, pacientes ficavam em memoria para facilitar o aprendizado. Agora o modulo usa PostgreSQL com Entity Framework Core.
 
 ## Arquivos principais
 
 - `src/UBSFlow.Dominio/Pacientes/Paciente.cs`: representa um paciente dentro do sistema.
 - `src/UBSFlow.Aplicacao/Pacientes/PacienteService.cs`: contem a regra de aplicacao para criar e consultar pacientes.
 - `src/UBSFlow.Aplicacao/Pacientes/IPacienteRepositorio.cs`: define quais operacoes um repositorio de pacientes precisa ter.
-- `src/UBSFlow.Infraestrutura/Pacientes/PacienteRepositorioEmMemoria.cs`: implementa o repositorio usando uma lista em memoria.
+- `src/UBSFlow.Infraestrutura/Pacientes/PacienteRepositorioEf.cs`: implementa o repositorio usando Entity Framework Core.
 - `src/UBSFlow.Api/Controllers/PacientesController.cs`: cria os endpoints HTTP.
 
 ## Fluxo de cadastro
@@ -24,10 +24,10 @@ PacientesController
 PacienteService
         |
         v
-PacienteRepositorioEmMemoria
+PacienteRepositorioEf
         |
         v
-List<Paciente>
+PostgreSQL
 ```
 
 ## Endpoints criados

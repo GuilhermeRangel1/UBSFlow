@@ -1,6 +1,8 @@
-# Fluxo: atendimento medico em memoria
+# Fluxo: atendimento medico
 
 Este passo inicia o MVP 3 com o registro do atendimento medico.
+
+Atendimentos usam PostgreSQL com Entity Framework Core. Ao finalizar, o atendimento e o status da fila sao persistidos.
 
 ## Endpoints criados
 

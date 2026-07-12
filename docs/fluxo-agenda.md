@@ -1,15 +1,15 @@
-# Fluxo: agenda em memoria
+# Fluxo: agenda
 
 Este passo cria a primeira versao da agenda.
 
-Ainda usamos armazenamento em memoria. O objetivo e testar as regras antes de colocar banco de dados.
+A agenda usa PostgreSQL com Entity Framework Core para persistir criacao, remarcacao e cancelamento.
 
 ## Arquivos principais
 
 - `src/UBSFlow.Dominio/Agenda/Agendamento.cs`: representa um horario marcado.
 - `src/UBSFlow.Dominio/Agenda/StatusAgendamento.cs`: define os status possiveis.
 - `src/UBSFlow.Aplicacao/Agenda/AgendamentoService.cs`: contem as regras da agenda.
-- `src/UBSFlow.Infraestrutura/Agenda/AgendamentoRepositorioEmMemoria.cs`: guarda agendamentos em uma lista.
+- `src/UBSFlow.Infraestrutura/Agenda/AgendamentoRepositorioEf.cs`: persiste agendamentos com Entity Framework Core.
 - `src/UBSFlow.Api/Controllers/AgendamentosController.cs`: cria os endpoints HTTP.
 
 ## Endpoints criados

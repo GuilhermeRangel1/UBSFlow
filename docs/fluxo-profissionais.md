@@ -1,15 +1,15 @@
-# Fluxo: profissionais em memoria
+# Fluxo: profissionais
 
 Este passo cria o cadastro e a listagem de profissionais da UBS.
 
-Assim como pacientes, ainda usamos uma lista em memoria. O objetivo e entender o fluxo antes de colocar banco de dados.
+Profissionais e disponibilidades usam PostgreSQL com Entity Framework Core.
 
 ## Arquivos principais
 
 - `src/UBSFlow.Dominio/Profissionais/Profissional.cs`: representa um profissional.
 - `src/UBSFlow.Dominio/Profissionais/PapelProfissional.cs`: define os papeis possiveis.
 - `src/UBSFlow.Aplicacao/Profissionais/ProfissionalService.cs`: contem as regras de cadastro e listagem.
-- `src/UBSFlow.Infraestrutura/Profissionais/ProfissionalRepositorioEmMemoria.cs`: guarda profissionais em uma lista.
+- `src/UBSFlow.Infraestrutura/Profissionais/ProfissionalRepositorioEf.cs`: persiste profissionais com Entity Framework Core.
 - `src/UBSFlow.Api/Controllers/ProfissionaisController.cs`: cria os endpoints HTTP.
 
 ## Endpoints criados

@@ -1,6 +1,6 @@
 # Fluxo: relatorios simples
 
-Este passo adiciona relatorios operacionais em memoria.
+Este passo adiciona relatorios operacionais usando os repositorios da aplicacao. No backend atual, esses repositorios leem dados persistidos com Entity Framework Core.
 
 ## Endpoints criados
 

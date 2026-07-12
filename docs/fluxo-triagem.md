@@ -1,6 +1,8 @@
-# Fluxo: triagem em memoria
+# Fluxo: triagem
 
 Este passo registra a triagem de um paciente que ja fez check-in.
+
+Triagens usam PostgreSQL com Entity Framework Core. Ao concluir, a classificacao de risco e a mudanca de status da fila sao persistidas.
 
 ## Endpoints criados
 
