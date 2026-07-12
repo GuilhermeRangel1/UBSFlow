@@ -2,6 +2,7 @@ FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
 
 COPY UBSFlow.sln ./
+COPY Directory.Build.props ./
 COPY src/UBSFlow.Api/UBSFlow.Api.csproj src/UBSFlow.Api/
 COPY src/UBSFlow.Aplicacao/UBSFlow.Aplicacao.csproj src/UBSFlow.Aplicacao/
 COPY src/UBSFlow.Dominio/UBSFlow.Dominio.csproj src/UBSFlow.Dominio/
