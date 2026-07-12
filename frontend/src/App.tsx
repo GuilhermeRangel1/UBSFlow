@@ -1,6 +1,5 @@
 import {
   Activity,
-  ArrowRight,
   BarChart3,
   CalendarClock,
   ClipboardList,
@@ -15,15 +14,38 @@ import {
   UserRound,
   UsersRound
 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { type ReactNode, useEffect, useMemo, useState } from "react";
 import {
+  carregarRelatorios,
+  criarAgendamento,
+  criarAtendimento,
+  criarCheckIn,
   criarPaciente,
+  criarProfissional,
+  criarTriagem,
   demoUsers,
+  finalizarAtendimento,
+  listarAgendamentos,
+  listarAuditoria,
+  listarFilaHoje,
   listarPacientes,
+  listarProfissionais,
   login,
+  type Agendamento,
+  type Atendimento,
+  type CheckIn,
+  type CriarAgendamentoRequest,
+  type CriarAtendimentoRequest,
   type CriarPacienteRequest,
+  type CriarProfissionalRequest,
+  type CriarTriagemRequest,
+  type LogAuditoria,
   type LoginResponse,
-  type Paciente
+  type Paciente,
+  type Profissional,
+  type RelatorioAtendimentos,
+  type RelatorioCancelamentos,
+  type RelatorioRisco
 } from "./api/ubsflowApi";
 
 type ModuleKey =
@@ -40,21 +62,14 @@ type ModuleKey =
 type ModuleItem = {
   key: ModuleKey;
   title: string;
-  subtitle: string;
   icon: typeof Activity;
   roles: string[];
 };
 
-type ModuleExperience = {
-  eyebrow: string;
-  title: string;
-  description: string;
-  image: string;
-  primary: string;
-  secondary: string;
-  focus: string;
-  caption: string;
-  steps: string[];
+type ReportsState = {
+  atendimentos: RelatorioAtendimentos | null;
+  riscos: RelatorioRisco | null;
+  cancelamentos: RelatorioCancelamentos | null;
 };
 
 const profileLabels: Record<string, string> = {
@@ -75,194 +90,28 @@ const roleLabels: Record<string, string> = {
 };
 
 const modules: ModuleItem[] = [
-  {
-    key: "visao-geral",
-    title: "Início",
-    subtitle: "Entrada da plataforma",
-    icon: LayoutDashboard,
-    roles: ["Todos"]
-  },
-  {
-    key: "pacientes",
-    title: "Pacientes",
-    subtitle: "Cadastro, busca e histórico",
-    icon: UserRound,
-    roles: ["ADMIN", "RECEPCIONISTA", "ENFERMEIRO", "MEDICO", "GESTOR"]
-  },
-  {
-    key: "profissionais",
-    title: "Profissionais",
-    subtitle: "Equipe e disponibilidade",
-    icon: UsersRound,
-    roles: ["ADMIN", "GESTOR"]
-  },
-  {
-    key: "agenda",
-    title: "Agenda",
-    subtitle: "Marcação e remarcação",
-    icon: CalendarClock,
-    roles: ["ADMIN", "RECEPCIONISTA"]
-  },
-  {
-    key: "fila",
-    title: "Fila",
-    subtitle: "Chegada e ordem de atendimento",
-    icon: ClipboardList,
-    roles: ["ADMIN", "RECEPCIONISTA", "ENFERMEIRO", "MEDICO", "GESTOR"]
-  },
-  {
-    key: "triagem",
-    title: "Triagem",
-    subtitle: "Sinais vitais e risco",
-    icon: HeartPulse,
-    roles: ["ADMIN", "ENFERMEIRO", "MEDICO"]
-  },
-  {
-    key: "atendimentos",
-    title: "Atendimentos",
-    subtitle: "Consulta e fechamento",
-    icon: Stethoscope,
-    roles: ["ADMIN", "MEDICO"]
-  },
-  {
-    key: "relatorios",
-    title: "Relatórios",
-    subtitle: "Indicadores da unidade",
-    icon: BarChart3,
-    roles: ["ADMIN", "GESTOR"]
-  },
-  {
-    key: "auditoria",
-    title: "Auditoria",
-    subtitle: "Histórico de alterações",
-    icon: FileClock,
-    roles: ["ADMIN"]
-  }
+  { key: "visao-geral", title: "Início", icon: LayoutDashboard, roles: ["Todos"] },
+  { key: "pacientes", title: "Pacientes", icon: UserRound, roles: ["ADMIN", "RECEPCIONISTA", "ENFERMEIRO", "MEDICO", "GESTOR"] },
+  { key: "profissionais", title: "Profissionais", icon: UsersRound, roles: ["ADMIN", "GESTOR"] },
+  { key: "agenda", title: "Agenda", icon: CalendarClock, roles: ["ADMIN", "RECEPCIONISTA"] },
+  { key: "fila", title: "Fila", icon: ClipboardList, roles: ["ADMIN", "RECEPCIONISTA", "ENFERMEIRO", "MEDICO", "GESTOR"] },
+  { key: "triagem", title: "Triagem", icon: HeartPulse, roles: ["ADMIN", "ENFERMEIRO"] },
+  { key: "atendimentos", title: "Atendimentos", icon: Stethoscope, roles: ["ADMIN", "MEDICO"] },
+  { key: "relatorios", title: "Relatórios", icon: BarChart3, roles: ["ADMIN", "GESTOR"] },
+  { key: "auditoria", title: "Auditoria", icon: FileClock, roles: ["ADMIN"] }
 ];
 
-const moduleExperiences: Record<ModuleKey, ModuleExperience> = {
-  "visao-geral": {
-    eyebrow: "UBSFlow",
-    title: "Uma central simples para conduzir o atendimento do começo ao fim.",
-    description:
-      "Escolha a área, acompanhe a jornada do paciente e mantenha a unidade funcionando com menos ruído.",
-    image: "https://images.unsplash.com/photo-1586773860418-d37222d8fce3?auto=format&fit=crop&w=1600&q=85",
-    primary: "Abrir pacientes",
-    secondary: "Ver agenda",
-    focus: "Fluxo conectado",
-    caption: "Agenda, chegada, triagem, consulta e gestão em uma experiência contínua.",
-    steps: ["Agenda", "Chegada", "Triagem", "Consulta", "Gestão"]
-  },
-  pacientes: {
-    eyebrow: "Pacientes",
-    title: "Cadastro rápido, busca clara e prontuário sempre à mão.",
-    description:
-      "A porta de entrada da unidade fica organizada para recepção, enfermagem, médicos e gestão.",
-    image: "https://images.unsplash.com/photo-1576765607924-7f3bb5b3359f?auto=format&fit=crop&w=1600&q=85",
-    primary: "Cadastrar paciente",
-    secondary: "Buscar cadastro",
-    focus: "Identificação segura",
-    caption: "CPF, CNS, contato e nascimento ajudam a evitar duplicidade no atendimento.",
-    steps: ["Buscar", "Cadastrar", "Atualizar", "Acompanhar"]
-  },
-  profissionais: {
-    eyebrow: "Profissionais",
-    title: "Equipe organizada por função, especialidade e disponibilidade.",
-    description:
-      "A gestão visualiza quem atende, quando atende e qual papel cada pessoa ocupa na rotina.",
-    image: "https://images.unsplash.com/photo-1559757175-0eb30cd8c063?auto=format&fit=crop&w=1600&q=85",
-    primary: "Adicionar profissional",
-    secondary: "Ver disponibilidade",
-    focus: "Equipe alinhada",
-    caption: "Escala, registro profissional e especialidade ficam em um único lugar.",
-    steps: ["Perfil", "Registro", "Escala", "Disponibilidade"]
-  },
-  agenda: {
-    eyebrow: "Agenda",
-    title: "Horários claros para marcar, remarcar e cancelar com motivo.",
-    description:
-      "A recepção encontra a melhor janela sem criar conflitos para o mesmo profissional.",
-    image: "https://images.unsplash.com/photo-1579684385127-1ef15d508118?auto=format&fit=crop&w=1600&q=85",
-    primary: "Marcar consulta",
-    secondary: "Remarcar horário",
-    focus: "Agenda sem conflito",
-    caption: "A unidade evita dois atendimentos no mesmo horário para a mesma pessoa da equipe.",
-    steps: ["Paciente", "Profissional", "Horário", "Confirmação"]
-  },
-  fila: {
-    eyebrow: "Fila",
-    title: "A chegada vira uma fila simples, visível e ordenada.",
-    description:
-      "Depois do check-in, cada paciente segue para triagem e consulta com prioridade bem definida.",
-    image: "https://images.unsplash.com/photo-1512678080530-7760d81faba6?auto=format&fit=crop&w=1600&q=85",
-    primary: "Registrar chegada",
-    secondary: "Abrir fila do dia",
-    focus: "Tempo sob controle",
-    caption: "O fluxo guarda os horários de chegada, triagem e atendimento para medir espera.",
-    steps: ["Chegada", "Fila", "Triagem", "Consulta"]
-  },
-  triagem: {
-    eyebrow: "Triagem",
-    title: "Sinais vitais e sintomas ajudam a ordenar quem precisa passar antes.",
-    description:
-      "A classificação de risco combina dados informados pela enfermagem e critérios da unidade.",
-    image: "https://images.unsplash.com/photo-1581056771107-24ca5f033842?auto=format&fit=crop&w=1600&q=85",
-    primary: "Iniciar triagem",
-    secondary: "Ver prioridades",
-    focus: "Prioridade automática",
-    caption: "Idade, febre, pressão, sintomas e risco informado ajustam a posição na fila.",
-    steps: ["Sinais vitais", "Sintomas", "Risco", "Prioridade"]
-  },
-  atendimentos: {
-    eyebrow: "Atendimentos",
-    title: "A consulta registra queixa, conduta, prescrição e retorno.",
-    description:
-      "O médico fecha o atendimento com histórico consistente para a próxima passagem do paciente.",
-    image: "https://images.unsplash.com/photo-1537368910025-700350fe46c7?auto=format&fit=crop&w=1600&q=85",
-    primary: "Registrar consulta",
-    secondary: "Finalizar atendimento",
-    focus: "Histórico preservado",
-    caption: "Atendimentos finalizados ficam protegidos para manter a linha clínica do paciente.",
-    steps: ["Queixa", "Conduta", "Prescrição", "Fechamento"]
-  },
-  relatorios: {
-    eyebrow: "Relatórios",
-    title: "Indicadores para entender espera, volume, risco e produtividade.",
-    description:
-      "A gestão enxerga o comportamento da unidade por período, profissional e classificação.",
-    image: "https://images.unsplash.com/photo-1576091160550-2173dba999ef?auto=format&fit=crop&w=1600&q=85",
-    primary: "Ver indicadores",
-    secondary: "Filtrar período",
-    focus: "Decisão mais clara",
-    caption: "Tempo médio de espera, faltas, cancelamentos e risco aparecem sem garimpar planilha.",
-    steps: ["Período", "Unidade", "Profissional", "Resultado"]
-  },
-  auditoria: {
-    eyebrow: "Auditoria",
-    title: "Ações importantes ficam registradas com autoria e contexto.",
-    description:
-      "Alterações em cadastros, cancelamentos e fechamentos podem ser acompanhados pela administração.",
-    image: "https://images.unsplash.com/photo-1450101499163-c8848c66ca85?auto=format&fit=crop&w=1600&q=85",
-    primary: "Ver histórico",
-    secondary: "Filtrar ações",
-    focus: "Rastreio confiável",
-    caption: "A unidade sabe quem alterou, quando alterou e por que a mudança aconteceu.",
-    steps: ["Ação", "Responsável", "Data", "Motivo"]
-  }
-};
+function canAccess(module: ModuleItem, role?: string) {
+  return module.roles.includes("Todos") || (role ? module.roles.includes(role) : false);
+}
 
-const journeyStages: Array<{
-  key: ModuleKey;
-  label: string;
-  description: string;
-  icon: typeof Activity;
-}> = [
-  { key: "agenda", label: "Agendar", description: "Horários e retornos", icon: CalendarClock },
-  { key: "fila", label: "Chegada", description: "Entrada do paciente", icon: ClipboardList },
-  { key: "triagem", label: "Triagem", description: "Sinais vitais e risco", icon: HeartPulse },
-  { key: "atendimentos", label: "Consulta", description: "Conduta e fechamento", icon: Stethoscope },
-  { key: "relatorios", label: "Gestão", description: "Indicadores da unidade", icon: BarChart3 }
-];
+function today() {
+  return new Date().toISOString().slice(0, 10);
+}
+
+function toDateTimeOffset(value: string) {
+  return value ? new Date(value).toISOString() : "";
+}
 
 export function App() {
   const [activeModule, setActiveModule] = useState<ModuleKey>("visao-geral");
@@ -270,8 +119,9 @@ export function App() {
   const [senha, setSenha] = useState("medico123");
   const [session, setSession] = useState<LoginResponse | null>(null);
   const [loginStatus, setLoginStatus] = useState("Escolha sua área para continuar.");
+
   const [pacientes, setPacientes] = useState<Paciente[]>([]);
-  const [pacientesStatus, setPacientesStatus] = useState("Entre para visualizar pacientes.");
+  const [pacientesStatus, setPacientesStatus] = useState("");
   const [filtroNome, setFiltroNome] = useState("");
   const [filtroCpf, setFiltroCpf] = useState("");
   const [novoPaciente, setNovoPaciente] = useState<CriarPacienteRequest>({
@@ -282,9 +132,71 @@ export function App() {
     cns: ""
   });
 
+  const [profissionais, setProfissionais] = useState<Profissional[]>([]);
+  const [profissionaisStatus, setProfissionaisStatus] = useState("");
+  const [novoProfissional, setNovoProfissional] = useState<CriarProfissionalRequest>({
+    nome: "",
+    papel: "MEDICO",
+    especialidade: "",
+    registroProfissional: ""
+  });
+
+  const [agendamentos, setAgendamentos] = useState<Agendamento[]>([]);
+  const [agendaStatus, setAgendaStatus] = useState("");
+  const [novoAgendamento, setNovoAgendamento] = useState<CriarAgendamentoRequest>({
+    pacienteId: "",
+    profissionalId: "",
+    inicio: "",
+    fim: ""
+  });
+
+  const [fila, setFila] = useState<CheckIn[]>([]);
+  const [filaStatus, setFilaStatus] = useState("");
+  const [agendamentoCheckIn, setAgendamentoCheckIn] = useState("");
+
+  const [triagemStatus, setTriagemStatus] = useState("");
+  const [novaTriagem, setNovaTriagem] = useState<CriarTriagemRequest>({
+    checkInId: "",
+    temperatura: 36.5,
+    pressaoSistolica: 120,
+    pressaoDiastolica: 80,
+    frequenciaCardiaca: 80,
+    sintomas: "",
+    classificacaoRisco: "VERDE",
+    observacoes: ""
+  });
+
+  const [atendimentoStatus, setAtendimentoStatus] = useState("");
+  const [atendimentoCriado, setAtendimentoCriado] = useState<Atendimento | null>(null);
+  const [novoAtendimento, setNovoAtendimento] = useState<CriarAtendimentoRequest>({
+    checkInId: "",
+    queixa: "",
+    hipoteseDiagnostica: "",
+    conduta: "",
+    prescricao: "",
+    encaminhamento: ""
+  });
+
+  const [relatoriosStatus, setRelatoriosStatus] = useState("");
+  const [periodoInicio, setPeriodoInicio] = useState(today());
+  const [periodoFim, setPeriodoFim] = useState(today());
+  const [relatorios, setRelatorios] = useState<ReportsState>({
+    atendimentos: null,
+    riscos: null,
+    cancelamentos: null
+  });
+
+  const [auditoria, setAuditoria] = useState<LogAuditoria[]>([]);
+  const [auditoriaStatus, setAuditoriaStatus] = useState("");
+
+  const visibleModules = useMemo(
+    () => modules.filter((module) => canAccess(module, session?.usuario.papel)),
+    [session?.usuario.papel]
+  );
+
   const selectedModule = useMemo(
-    () => modules.find((module) => module.key === activeModule) ?? modules[0],
-    [activeModule]
+    () => visibleModules.find((module) => module.key === activeModule) ?? visibleModules[0],
+    [activeModule, visibleModules]
   );
 
   async function handleLogin() {
@@ -302,37 +214,25 @@ export function App() {
   }
 
   async function carregarPacientes() {
-    if (!session) {
-      setPacientesStatus("Faça login para carregar pacientes.");
-      return;
-    }
+    if (!session) return;
 
-    setPacientesStatus("Carregando pacientes...");
-
+    setPacientesStatus("Carregando...");
     try {
       const response = await listarPacientes(session.token, {
         nome: filtroNome.trim(),
         cpf: filtroCpf.trim()
       });
       setPacientes(response.itens);
-      setPacientesStatus(
-        response.totalItens === 0
-          ? "Nenhum paciente encontrado."
-          : `${response.totalItens} paciente(s) encontrado(s).`
-      );
+      setPacientesStatus(`${response.totalItens} encontrado(s).`);
     } catch (error) {
-      setPacientesStatus(error instanceof Error ? error.message : "Falha ao carregar pacientes.");
+      setPacientesStatus(error instanceof Error ? error.message : "Falha ao carregar.");
     }
   }
 
   async function handleCriarPaciente() {
-    if (!session) {
-      setPacientesStatus("Entre pela recepção ou administração para cadastrar.");
-      return;
-    }
+    if (!session) return;
 
-    setPacientesStatus("Salvando paciente...");
-
+    setPacientesStatus("Salvando...");
     try {
       await criarPaciente(session.token, {
         ...novoPaciente,
@@ -341,17 +241,211 @@ export function App() {
       });
       setNovoPaciente({ nome: "", cpf: "", dataNascimento: "", telefone: "", cns: "" });
       await carregarPacientes();
-      setPacientesStatus("Paciente cadastrado com sucesso.");
+      setPacientesStatus("Paciente salvo.");
     } catch (error) {
-      setPacientesStatus(error instanceof Error ? error.message : "Falha ao cadastrar paciente.");
+      setPacientesStatus(error instanceof Error ? error.message : "Falha ao salvar.");
+    }
+  }
+
+  async function carregarProfissionais() {
+    if (!session) return;
+
+    setProfissionaisStatus("Carregando...");
+    try {
+      const response = await listarProfissionais(session.token);
+      setProfissionais(response.itens);
+      setProfissionaisStatus(`${response.totalItens} encontrado(s).`);
+    } catch (error) {
+      setProfissionaisStatus(error instanceof Error ? error.message : "Falha ao carregar.");
+    }
+  }
+
+  async function handleCriarProfissional() {
+    if (!session) return;
+
+    setProfissionaisStatus("Salvando...");
+    try {
+      await criarProfissional(session.token, {
+        ...novoProfissional,
+        especialidade: novoProfissional.especialidade || null,
+        registroProfissional: novoProfissional.registroProfissional || null
+      });
+      setNovoProfissional({ nome: "", papel: "MEDICO", especialidade: "", registroProfissional: "" });
+      await carregarProfissionais();
+      setProfissionaisStatus("Profissional salvo.");
+    } catch (error) {
+      setProfissionaisStatus(error instanceof Error ? error.message : "Falha ao salvar.");
+    }
+  }
+
+  async function carregarAgenda() {
+    if (!session) return;
+
+    setAgendaStatus("Carregando...");
+    try {
+      const response = await listarAgendamentos(session.token);
+      setAgendamentos(response.itens);
+      setAgendaStatus(`${response.totalItens} encontrado(s).`);
+    } catch (error) {
+      setAgendaStatus(error instanceof Error ? error.message : "Falha ao carregar.");
+    }
+  }
+
+  async function handleCriarAgendamento() {
+    if (!session) return;
+
+    setAgendaStatus("Salvando...");
+    try {
+      await criarAgendamento(session.token, {
+        pacienteId: novoAgendamento.pacienteId,
+        profissionalId: novoAgendamento.profissionalId,
+        inicio: toDateTimeOffset(novoAgendamento.inicio),
+        fim: toDateTimeOffset(novoAgendamento.fim)
+      });
+      setNovoAgendamento({ pacienteId: "", profissionalId: "", inicio: "", fim: "" });
+      await carregarAgenda();
+      setAgendaStatus("Agendamento salvo.");
+    } catch (error) {
+      setAgendaStatus(error instanceof Error ? error.message : "Falha ao salvar.");
+    }
+  }
+
+  async function carregarFila() {
+    if (!session) return;
+
+    setFilaStatus("Carregando...");
+    try {
+      const response = await listarFilaHoje(session.token);
+      setFila(response);
+      setFilaStatus(`${response.length} na fila.`);
+    } catch (error) {
+      setFilaStatus(error instanceof Error ? error.message : "Falha ao carregar.");
+    }
+  }
+
+  async function handleCriarCheckIn() {
+    if (!session) return;
+
+    setFilaStatus("Salvando...");
+    try {
+      await criarCheckIn(session.token, agendamentoCheckIn);
+      setAgendamentoCheckIn("");
+      if (session.usuario.papel !== "RECEPCIONISTA") {
+        await carregarFila();
+      }
+      setFilaStatus("Chegada registrada.");
+    } catch (error) {
+      setFilaStatus(error instanceof Error ? error.message : "Falha ao salvar.");
+    }
+  }
+
+  async function handleCriarTriagem() {
+    if (!session) return;
+
+    setTriagemStatus("Salvando...");
+    try {
+      await criarTriagem(session.token, {
+        ...novaTriagem,
+        observacoes: novaTriagem.observacoes || null
+      });
+      setNovaTriagem({
+        checkInId: "",
+        temperatura: 36.5,
+        pressaoSistolica: 120,
+        pressaoDiastolica: 80,
+        frequenciaCardiaca: 80,
+        sintomas: "",
+        classificacaoRisco: "VERDE",
+        observacoes: ""
+      });
+      setTriagemStatus("Triagem salva.");
+      await carregarFila();
+    } catch (error) {
+      setTriagemStatus(error instanceof Error ? error.message : "Falha ao salvar.");
+    }
+  }
+
+  async function handleCriarAtendimento() {
+    if (!session) return;
+
+    setAtendimentoStatus("Salvando...");
+    try {
+      const atendimento = await criarAtendimento(session.token, {
+        ...novoAtendimento,
+        prescricao: novoAtendimento.prescricao || null,
+        encaminhamento: novoAtendimento.encaminhamento || null
+      });
+      setAtendimentoCriado(atendimento);
+      setNovoAtendimento({
+        checkInId: "",
+        queixa: "",
+        hipoteseDiagnostica: "",
+        conduta: "",
+        prescricao: "",
+        encaminhamento: ""
+      });
+      setAtendimentoStatus("Atendimento salvo.");
+    } catch (error) {
+      setAtendimentoStatus(error instanceof Error ? error.message : "Falha ao salvar.");
+    }
+  }
+
+  async function handleFinalizarAtendimento() {
+    if (!session || !atendimentoCriado) return;
+
+    setAtendimentoStatus("Finalizando...");
+    try {
+      const response = await finalizarAtendimento(session.token, atendimentoCriado.id);
+      setAtendimentoCriado(response);
+      setAtendimentoStatus("Atendimento finalizado.");
+    } catch (error) {
+      setAtendimentoStatus(error instanceof Error ? error.message : "Falha ao finalizar.");
+    }
+  }
+
+  async function handleCarregarRelatorios() {
+    if (!session) return;
+
+    setRelatoriosStatus("Carregando...");
+    try {
+      setRelatorios(await carregarRelatorios(session.token, periodoInicio, periodoFim));
+      setRelatoriosStatus("Atualizado.");
+    } catch (error) {
+      setRelatoriosStatus(error instanceof Error ? error.message : "Falha ao carregar.");
+    }
+  }
+
+  async function handleCarregarAuditoria() {
+    if (!session) return;
+
+    setAuditoriaStatus("Carregando...");
+    try {
+      const response = await listarAuditoria(session.token);
+      setAuditoria(response);
+      setAuditoriaStatus(`${response.length} registro(s).`);
+    } catch (error) {
+      setAuditoriaStatus(error instanceof Error ? error.message : "Falha ao carregar.");
     }
   }
 
   useEffect(() => {
-    if (session && activeModule === "pacientes") {
-      void carregarPacientes();
+    if (!session) return;
+
+    if (!visibleModules.some((module) => module.key === activeModule)) {
+      setActiveModule("visao-geral");
     }
-  }, [session, activeModule]);
+  }, [activeModule, session, visibleModules]);
+
+  useEffect(() => {
+    if (!session) return;
+
+    if (activeModule === "pacientes") void carregarPacientes();
+    if (activeModule === "profissionais") void carregarProfissionais();
+    if (activeModule === "agenda") void carregarAgenda();
+    if (activeModule === "fila" && session.usuario.papel !== "RECEPCIONISTA") void carregarFila();
+    if (activeModule === "relatorios") void handleCarregarRelatorios();
+    if (activeModule === "auditoria") void handleCarregarAuditoria();
+  }, [activeModule, session]);
 
   if (!session) {
     return (
@@ -375,21 +469,19 @@ export function App() {
           </div>
           <div>
             <strong>UBSFlow</strong>
-            <span>Gestão do cuidado</span>
+            <span>{roleLabels[session.usuario.papel] ?? session.usuario.papel}</span>
           </div>
         </div>
 
-        <nav className="nav-list" aria-label="Áreas da plataforma">
-          {modules.map((module) => {
+        <nav className="nav-list" aria-label="Áreas">
+          {visibleModules.map((module) => {
             const Icon = module.icon;
-            const isActive = module.key === activeModule;
 
             return (
               <button
-                className={isActive ? "nav-item active" : "nav-item"}
+                className={module.key === activeModule ? "nav-item active" : "nav-item"}
                 key={module.key}
                 onClick={() => setActiveModule(module.key)}
-                title={module.subtitle}
                 type="button"
               >
                 <Icon size={18} />
@@ -434,365 +526,160 @@ export function App() {
       </aside>
 
       <section className="content app-content">
-        {activeModule === "visao-geral" ? (
-          <HomeScreen
-            currentRole={roleLabels[session.usuario.papel] ?? session.usuario.papel}
-            onNavigate={setActiveModule}
-            userName={session.usuario.nome}
-          />
-        ) : activeModule === "pacientes" ? (
-          <PatientsPage
-            filtroCpf={filtroCpf}
-            filtroNome={filtroNome}
-            novoPaciente={novoPaciente}
-            onBuscar={carregarPacientes}
-            onCriar={handleCriarPaciente}
-            pacientes={pacientes}
-            podeCriar={session.usuario.papel === "ADMIN" || session.usuario.papel === "RECEPCIONISTA"}
-            setFiltroCpf={setFiltroCpf}
-            setFiltroNome={setFiltroNome}
-            setNovoPaciente={setNovoPaciente}
-            status={pacientesStatus}
-          />
-        ) : (
-          <ModuleExperienceScreen
-            module={selectedModule}
-            onNavigate={setActiveModule}
-            roleLabel={roleLabels[session.usuario.papel] ?? session.usuario.papel}
-          />
+        {selectedModule.key === "visao-geral" && (
+          <HomeScreen modules={visibleModules} onNavigate={setActiveModule} userName={session.usuario.nome} />
+        )}
+
+        {selectedModule.key === "pacientes" && (
+          <WorkPage title="Pacientes">
+            <PacientesCrud
+              filtroCpf={filtroCpf}
+              filtroNome={filtroNome}
+              novoPaciente={novoPaciente}
+              onBuscar={carregarPacientes}
+              onCriar={handleCriarPaciente}
+              pacientes={pacientes}
+              podeCriar={session.usuario.papel === "ADMIN" || session.usuario.papel === "RECEPCIONISTA"}
+              setFiltroCpf={setFiltroCpf}
+              setFiltroNome={setFiltroNome}
+              setNovoPaciente={setNovoPaciente}
+              status={pacientesStatus}
+            />
+          </WorkPage>
+        )}
+
+        {selectedModule.key === "profissionais" && (
+          <WorkPage title="Profissionais">
+            <ProfissionaisPage
+              novoProfissional={novoProfissional}
+              onCriar={handleCriarProfissional}
+              onListar={carregarProfissionais}
+              podeCriar={session.usuario.papel === "ADMIN"}
+              profissionais={profissionais}
+              setNovoProfissional={setNovoProfissional}
+              status={profissionaisStatus}
+            />
+          </WorkPage>
+        )}
+
+        {selectedModule.key === "agenda" && (
+          <WorkPage title="Agenda">
+            <AgendaPage
+              agendamentos={agendamentos}
+              novoAgendamento={novoAgendamento}
+              onCriar={handleCriarAgendamento}
+              onListar={carregarAgenda}
+              setNovoAgendamento={setNovoAgendamento}
+              status={agendaStatus}
+            />
+          </WorkPage>
+        )}
+
+        {selectedModule.key === "fila" && (
+          <WorkPage title="Fila">
+            <FilaPage
+              agendamentoCheckIn={agendamentoCheckIn}
+              fila={fila}
+              onCriarCheckIn={handleCriarCheckIn}
+              onListar={carregarFila}
+              podeCriar={session.usuario.papel === "ADMIN" || session.usuario.papel === "RECEPCIONISTA"}
+              podeListar={session.usuario.papel !== "RECEPCIONISTA"}
+              setAgendamentoCheckIn={setAgendamentoCheckIn}
+              status={filaStatus}
+            />
+          </WorkPage>
+        )}
+
+        {selectedModule.key === "triagem" && (
+          <WorkPage title="Triagem">
+            <TriagemPage
+              novaTriagem={novaTriagem}
+              onCriar={handleCriarTriagem}
+              setNovaTriagem={setNovaTriagem}
+              status={triagemStatus}
+            />
+          </WorkPage>
+        )}
+
+        {selectedModule.key === "atendimentos" && (
+          <WorkPage title="Atendimentos">
+            <AtendimentosPage
+              atendimentoCriado={atendimentoCriado}
+              novoAtendimento={novoAtendimento}
+              onCriar={handleCriarAtendimento}
+              onFinalizar={handleFinalizarAtendimento}
+              setNovoAtendimento={setNovoAtendimento}
+              status={atendimentoStatus}
+            />
+          </WorkPage>
+        )}
+
+        {selectedModule.key === "relatorios" && (
+          <WorkPage title="Relatórios">
+            <RelatoriosPage
+              fim={periodoFim}
+              inicio={periodoInicio}
+              onCarregar={handleCarregarRelatorios}
+              relatorios={relatorios}
+              setFim={setPeriodoFim}
+              setInicio={setPeriodoInicio}
+              status={relatoriosStatus}
+            />
+          </WorkPage>
+        )}
+
+        {selectedModule.key === "auditoria" && (
+          <WorkPage title="Auditoria">
+            <AuditoriaPage auditoria={auditoria} onListar={handleCarregarAuditoria} status={auditoriaStatus} />
+          </WorkPage>
         )}
       </section>
     </main>
   );
 }
 
+function WorkPage({ children, title }: { children: ReactNode; title: string }) {
+  return (
+    <div className="app-page work-page">
+      <header className="work-header">
+        <span>UBSFlow</span>
+        <h1>{title}</h1>
+      </header>
+      {children}
+    </div>
+  );
+}
+
 function HomeScreen({
-  currentRole,
+  modules,
   onNavigate,
   userName
 }: {
-  currentRole: string;
+  modules: ModuleItem[];
   onNavigate: (module: ModuleKey) => void;
   userName: string;
 }) {
   return (
     <div className="app-page home-page">
-      <section className="page-hero home-hero">
-        <div className="page-hero-copy">
-          <span className="page-kicker">Bem-vindo, {userName}</span>
-          <h1>O atendimento da unidade em uma jornada visual e direta.</h1>
-          <p>
-            Você está na área de {currentRole}. Entre em uma etapa para cuidar do fluxo sem
-            carregar a tela com informação que não precisa estar aqui.
-          </p>
-          <div className="hero-action-row">
-            <button className="landing-primary" onClick={() => onNavigate("pacientes")} type="button">
-              Pacientes
-              <ArrowRight size={18} />
-            </button>
-            <button className="landing-secondary" onClick={() => onNavigate("agenda")} type="button">
-              Agenda
-            </button>
-          </div>
-        </div>
-
-        <div className="home-visual">
-          <img
-            alt="Equipe de saúde acompanhando atendimento"
-            src="https://images.unsplash.com/photo-1550831107-1553da8c8464?auto=format&fit=crop&w=1200&q=85"
-          />
-          <div className="home-visual-card">
-            <span>Agora</span>
-            <strong>Fluxo conectado</strong>
-            <small>Da chegada ao fechamento</small>
-          </div>
-        </div>
+      <section className="home-compact">
+        <span>Olá, {userName}</span>
+        <h1>Escolha uma área.</h1>
       </section>
 
-      <section className="route-showcase" aria-label="Principais áreas">
-        <button onClick={() => onNavigate("fila")} type="button">
-          <span>01</span>
-          <strong>Receber pacientes</strong>
-          <small>Chegada, fila e encaminhamento</small>
-        </button>
-        <button onClick={() => onNavigate("triagem")} type="button">
-          <span>02</span>
-          <strong>Priorizar atendimento</strong>
-          <small>Sinais vitais, sintomas e risco</small>
-        </button>
-        <button onClick={() => onNavigate("atendimentos")} type="button">
-          <span>03</span>
-          <strong>Fechar consulta</strong>
-          <small>Conduta, prescrição e retorno</small>
-        </button>
+      <section className="drawer-grid" aria-label="Áreas disponíveis">
+        {modules
+          .filter((module) => module.key !== "visao-geral")
+          .map((module) => {
+            const Icon = module.icon;
+            return (
+              <button key={module.key} onClick={() => onNavigate(module.key)} type="button">
+                <Icon size={24} />
+                <strong>{module.title}</strong>
+              </button>
+            );
+          })}
       </section>
     </div>
-  );
-}
-
-function PatientsPage(props: {
-  filtroCpf: string;
-  filtroNome: string;
-  novoPaciente: CriarPacienteRequest;
-  onBuscar: () => void;
-  onCriar: () => void;
-  pacientes: Paciente[];
-  podeCriar: boolean;
-  setFiltroCpf: (value: string) => void;
-  setFiltroNome: (value: string) => void;
-  setNovoPaciente: (value: CriarPacienteRequest) => void;
-  status: string;
-}) {
-  const experience = moduleExperiences.pacientes;
-
-  return (
-    <div className="app-page patients-page">
-      <section className="page-hero compact-hero">
-        <div className="page-hero-copy">
-          <span className="page-kicker">{experience.eyebrow}</span>
-          <h1>{experience.title}</h1>
-          <p>{experience.description}</p>
-        </div>
-        <div className="rounded-photo">
-          <img alt="Atendimento ao paciente" src={experience.image} />
-        </div>
-      </section>
-
-      <PacientesCrud {...props} />
-    </div>
-  );
-}
-
-function ModuleExperienceScreen({
-  module,
-  onNavigate,
-  roleLabel
-}: {
-  module: ModuleItem;
-  onNavigate: (module: ModuleKey) => void;
-  roleLabel: string;
-}) {
-  const experience = moduleExperiences[module.key];
-  const Icon = module.icon;
-
-  return (
-    <div className="app-page">
-      <section className="page-hero feature-hero">
-        <div className="page-hero-copy">
-          <span className="page-kicker">{experience.eyebrow}</span>
-          <h1>{experience.title}</h1>
-          <p>{experience.description}</p>
-          <div className="hero-action-row">
-            <button className="landing-primary" type="button">
-              {experience.primary}
-              <ArrowRight size={18} />
-            </button>
-            <button className="landing-secondary" type="button">
-              {experience.secondary}
-            </button>
-          </div>
-        </div>
-
-        <div className="feature-media">
-          <img alt={module.title} src={experience.image} />
-          <div className="feature-caption">
-            <Icon size={22} />
-            <strong>{experience.focus}</strong>
-            <small>{experience.caption}</small>
-          </div>
-        </div>
-      </section>
-
-      <section className="module-stage">
-        <div className="step-ribbon">
-          {experience.steps.map((step, index) => (
-            <article key={step}>
-              <span>{String(index + 1).padStart(2, "0")}</span>
-              <strong>{step}</strong>
-            </article>
-          ))}
-        </div>
-
-        <ExperienceConsole moduleKey={module.key} roleLabel={roleLabel} />
-
-        <div className="module-access">
-          <ShieldCheck size={18} />
-          <span>
-            Área disponível para{" "}
-            {module.roles.map((role) => roleLabels[role] ?? role).join(", ")}.
-          </span>
-          <button onClick={() => onNavigate("visao-geral")} type="button">
-            Voltar ao início
-          </button>
-        </div>
-      </section>
-    </div>
-  );
-}
-
-function ExperienceConsole({ moduleKey, roleLabel }: { moduleKey: ModuleKey; roleLabel: string }) {
-  if (moduleKey === "profissionais") {
-    return (
-      <section className="experience-console split-console">
-        <div>
-          <span className="console-kicker">Equipe</span>
-          <h2>Novo profissional</h2>
-        </div>
-        <div className="form-grid">
-          <label>
-            Nome
-            <input placeholder="Nome completo" />
-          </label>
-          <label>
-            Especialidade
-            <input placeholder="Clínica médica" />
-          </label>
-          <label>
-            Registro
-            <input placeholder="CRM ou COREN" />
-          </label>
-        </div>
-        <button className="primary-action" type="button">Salvar profissional</button>
-      </section>
-    );
-  }
-
-  if (moduleKey === "agenda") {
-    return (
-      <section className="experience-console split-console">
-        <div>
-          <span className="console-kicker">Agenda</span>
-          <h2>Marcar consulta</h2>
-        </div>
-        <div className="form-grid">
-          <label>
-            Paciente
-            <input placeholder="Buscar paciente" />
-          </label>
-          <label>
-            Data
-            <input type="date" />
-          </label>
-          <label>
-            Horário
-            <input type="time" />
-          </label>
-        </div>
-        <button className="primary-action" type="button">Confirmar horário</button>
-      </section>
-    );
-  }
-
-  if (moduleKey === "fila") {
-    return (
-      <section className="experience-console queue-console">
-        <div>
-          <span className="console-kicker">Fila de hoje</span>
-          <h2>Chegada registrada, próximo passo visível.</h2>
-        </div>
-        <div className="queue-preview">
-          <article>
-            <strong>Maria Souza</strong>
-            <span>Triagem prioritária</span>
-          </article>
-          <article>
-            <strong>João Lima</strong>
-            <span>Aguardando consulta</span>
-          </article>
-          <article>
-            <strong>Ana Costa</strong>
-            <span>Check-in concluído</span>
-          </article>
-        </div>
-        <button className="primary-action" type="button">Registrar chegada</button>
-      </section>
-    );
-  }
-
-  if (moduleKey === "triagem") {
-    return (
-      <section className="experience-console split-console">
-        <div>
-          <span className="console-kicker">Enfermagem</span>
-          <h2>Classificar risco</h2>
-        </div>
-        <div className="form-grid">
-          <label>
-            Temperatura
-            <input placeholder="38,2" />
-          </label>
-          <label>
-            Pressão
-            <input placeholder="140/90" />
-          </label>
-          <label>
-            Sintomas
-            <input placeholder="Dor, febre, tontura" />
-          </label>
-        </div>
-        <button className="primary-action" type="button">Gerar prioridade</button>
-      </section>
-    );
-  }
-
-  if (moduleKey === "atendimentos") {
-    return (
-      <section className="experience-console split-console">
-        <div>
-          <span className="console-kicker">{roleLabel}</span>
-          <h2>Registro da consulta</h2>
-        </div>
-        <div className="form-grid">
-          <label>
-            Queixa
-            <input placeholder="Motivo da consulta" />
-          </label>
-          <label>
-            Conduta
-            <input placeholder="Orientação e prescrição" />
-          </label>
-          <label>
-            Retorno
-            <input placeholder="Quando necessário" />
-          </label>
-        </div>
-        <button className="primary-action" type="button">Finalizar atendimento</button>
-      </section>
-    );
-  }
-
-  if (moduleKey === "relatorios") {
-    return (
-      <section className="experience-console report-console">
-        <div>
-          <span className="console-kicker">Gestão</span>
-          <h2>Resumo da unidade</h2>
-        </div>
-        <div className="bars-preview" aria-label="Resumo visual">
-          <span style={{ height: "72%" }} />
-          <span style={{ height: "44%" }} />
-          <span style={{ height: "88%" }} />
-          <span style={{ height: "58%" }} />
-          <span style={{ height: "66%" }} />
-        </div>
-        <button className="primary-action" type="button">Aplicar filtro</button>
-      </section>
-    );
-  }
-
-  return (
-    <section className="experience-console audit-console">
-      <div>
-        <span className="console-kicker">Auditoria</span>
-        <h2>Últimas alterações</h2>
-      </div>
-      <div className="audit-lines">
-        <span>Cadastro atualizado pela recepção</span>
-        <span>Consulta finalizada pelo médico</span>
-        <span>Cancelamento registrado com motivo</span>
-      </div>
-      <button className="primary-action" type="button">Filtrar histórico</button>
-    </section>
   );
 }
 
@@ -842,13 +729,8 @@ function PortfolioLanding({
             da chegada do paciente ao fechamento do atendimento.
           </p>
           <div className="portfolio-actions">
-            <a className="landing-primary" href="#acesso">
-              Entrar
-              <ArrowRight size={18} />
-            </a>
-            <a className="landing-secondary" href="#fluxo">
-              Ver fluxo
-            </a>
+            <a className="landing-primary" href="#acesso">Entrar</a>
+            <a className="landing-secondary" href="#fluxo">Ver fluxo</a>
           </div>
         </div>
 
@@ -893,25 +775,6 @@ function PortfolioLanding({
         </div>
       </section>
 
-      <section className="media-ribbon" aria-label="Visão visual do produto">
-        <img
-          alt="Profissional de saúde em atendimento"
-          src="https://images.unsplash.com/photo-1551076805-e1869033e561?auto=format&fit=crop&w=900&q=80"
-        />
-        <img
-          alt="Corredor de unidade de saúde"
-          src="https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?auto=format&fit=crop&w=900&q=80"
-        />
-        <img
-          alt="Equipe analisando dados clínicos"
-          src="https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=900&q=80"
-        />
-        <div>
-          <span>Cuidado conectado</span>
-          <strong>Uma experiência clara para operar a rotina da unidade.</strong>
-        </div>
-      </section>
-
       <section className="portfolio-section" id="produto">
         <div className="section-heading">
           <span>Por que existe</span>
@@ -926,12 +789,12 @@ function PortfolioLanding({
           <article>
             <HeartPulse size={24} />
             <strong>Prioridade</strong>
-            <p>Triagem, sinais vitais e risco mostram uma rotina real, não tela decorativa.</p>
+            <p>Triagem, sinais vitais e risco mostram uma rotina real.</p>
           </article>
           <article>
             <ShieldCheck size={24} />
             <strong>Controle</strong>
-            <p>Cada equipe atua no seu espaço, com segurança e rastreio das mudanças.</p>
+            <p>Cada equipe atua no seu espaço.</p>
           </article>
         </div>
       </section>
@@ -939,31 +802,14 @@ function PortfolioLanding({
       <section className="story-section" id="fluxo">
         <div className="section-heading">
           <span>Jornada</span>
-          <h2>Da chegada ao fechamento, cada etapa conversa com a próxima.</h2>
-        </div>
-        <div className="story-track">
-          {journeyStages.map((stage, index) => {
-            const Icon = stage.icon;
-            return (
-              <article key={stage.key}>
-                <small>{String(index + 1).padStart(2, "0")}</small>
-                <Icon size={24} />
-                <strong>{stage.label}</strong>
-                <p>{stage.description}</p>
-              </article>
-            );
-          })}
+          <h2>Da chegada ao fechamento.</h2>
         </div>
       </section>
 
       <section className="demo-section" id="acesso">
         <div className="demo-copy">
           <span>Acesso</span>
-          <h2>Escolha sua área e entre na plataforma.</h2>
-          <p>
-            Cada perfil abre uma rotina diferente para acompanhar pacientes, organizar
-            agenda, priorizar triagem e visualizar a unidade.
-          </p>
+          <h2>Escolha sua área.</h2>
         </div>
 
         <div className="landing-login">
@@ -1022,19 +868,9 @@ function PacientesCrud({
   status: string;
 }) {
   return (
-    <div className="crud-stack">
-      <section className="crud-panel search-panel">
-        <div className="crud-heading">
-          <div>
-            <h3>Buscar pacientes</h3>
-            <p>Localize o cadastro antes de abrir fila, retorno ou atendimento.</p>
-          </div>
-          <button className="secondary-action bordered" onClick={onBuscar} type="button">
-            <Search size={16} />
-            Buscar
-          </button>
-        </div>
-
+    <div className="work-grid">
+      <section className="work-card">
+        <CardTitle title="Buscar" status={status} />
         <div className="form-grid two-columns">
           <label>
             Nome
@@ -1045,87 +881,452 @@ function PacientesCrud({
             <input value={filtroCpf} onChange={(event) => setFiltroCpf(event.target.value)} maxLength={11} />
           </label>
         </div>
+        <button className="primary-action" onClick={onBuscar} type="button">
+          <Search size={16} />
+          Buscar
+        </button>
       </section>
 
-      <section className="crud-panel">
-        <div className="crud-heading">
-          <div>
-            <h3>Cadastrar paciente</h3>
-            <p>Entrada inicial para recepção e administração da unidade.</p>
+      {podeCriar && (
+        <section className="work-card">
+          <CardTitle title="Cadastrar" />
+          <div className="form-grid">
+            <label>
+              Nome
+              <input value={novoPaciente.nome} onChange={(event) => setNovoPaciente({ ...novoPaciente, nome: event.target.value })} />
+            </label>
+            <label>
+              CPF
+              <input maxLength={11} value={novoPaciente.cpf} onChange={(event) => setNovoPaciente({ ...novoPaciente, cpf: event.target.value })} />
+            </label>
+            <label>
+              Nascimento
+              <input type="date" value={novoPaciente.dataNascimento} onChange={(event) => setNovoPaciente({ ...novoPaciente, dataNascimento: event.target.value })} />
+            </label>
+            <label>
+              Telefone
+              <input value={novoPaciente.telefone} onChange={(event) => setNovoPaciente({ ...novoPaciente, telefone: event.target.value })} />
+            </label>
+            <label>
+              CNS
+              <input value={novoPaciente.cns ?? ""} onChange={(event) => setNovoPaciente({ ...novoPaciente, cns: event.target.value })} />
+            </label>
           </div>
-          <button className="primary-action" disabled={!podeCriar} onClick={onCriar} type="button">
-            Salvar
-          </button>
-        </div>
+          <button className="primary-action" onClick={onCriar} type="button">Salvar</button>
+        </section>
+      )}
 
+      <section className="work-card wide">
+        <CardTitle title="Cadastrados" />
+        <SimpleTable
+          columns={["Nome", "CPF", "Nascimento", "Telefone", "CNS"]}
+          rows={pacientes.map((item) => [
+            item.nome,
+            item.cpf,
+            item.dataNascimento,
+            item.telefone,
+            item.cns ?? "-"
+          ])}
+        />
+      </section>
+    </div>
+  );
+}
+
+function ProfissionaisPage({
+  novoProfissional,
+  onCriar,
+  onListar,
+  podeCriar,
+  profissionais,
+  setNovoProfissional,
+  status
+}: {
+  novoProfissional: CriarProfissionalRequest;
+  onCriar: () => void;
+  onListar: () => void;
+  podeCriar: boolean;
+  profissionais: Profissional[];
+  setNovoProfissional: (value: CriarProfissionalRequest) => void;
+  status: string;
+}) {
+  return (
+    <div className="work-grid">
+      {podeCriar && (
+        <section className="work-card">
+          <CardTitle title="Cadastrar" status={status} />
+          <div className="form-grid">
+            <label>
+              Nome
+              <input value={novoProfissional.nome} onChange={(event) => setNovoProfissional({ ...novoProfissional, nome: event.target.value })} />
+            </label>
+            <label>
+              Papel
+              <select value={novoProfissional.papel} onChange={(event) => setNovoProfissional({ ...novoProfissional, papel: event.target.value })}>
+                <option value="MEDICO">Médico</option>
+                <option value="ENFERMEIRO">Enfermeiro</option>
+                <option value="RECEPCIONISTA">Recepcionista</option>
+                <option value="GESTOR">Gestor</option>
+                <option value="ADMIN">Administração</option>
+              </select>
+            </label>
+            <label>
+              Especialidade
+              <input value={novoProfissional.especialidade ?? ""} onChange={(event) => setNovoProfissional({ ...novoProfissional, especialidade: event.target.value })} />
+            </label>
+            <label>
+              Registro
+              <input value={novoProfissional.registroProfissional ?? ""} onChange={(event) => setNovoProfissional({ ...novoProfissional, registroProfissional: event.target.value })} />
+            </label>
+          </div>
+          <button className="primary-action" onClick={onCriar} type="button">Salvar</button>
+        </section>
+      )}
+
+      <section className="work-card wide">
+        <CardTitle title="Equipe" status={status} />
+        <button className="secondary-action bordered" onClick={onListar} type="button">Atualizar</button>
+        <SimpleTable
+          columns={["Nome", "Papel", "Especialidade", "Registro"]}
+          rows={profissionais.map((item) => [
+            item.nome,
+            roleLabels[item.papel] ?? item.papel,
+            item.especialidade ?? "-",
+            item.registroProfissional ?? "-"
+          ])}
+        />
+      </section>
+    </div>
+  );
+}
+
+function AgendaPage({
+  agendamentos,
+  novoAgendamento,
+  onCriar,
+  onListar,
+  setNovoAgendamento,
+  status
+}: {
+  agendamentos: Agendamento[];
+  novoAgendamento: CriarAgendamentoRequest;
+  onCriar: () => void;
+  onListar: () => void;
+  setNovoAgendamento: (value: CriarAgendamentoRequest) => void;
+  status: string;
+}) {
+  return (
+    <div className="work-grid">
+      <section className="work-card">
+        <CardTitle title="Marcar" status={status} />
         <div className="form-grid">
           <label>
-            Nome
-            <input
-              value={novoPaciente.nome}
-              onChange={(event) => setNovoPaciente({ ...novoPaciente, nome: event.target.value })}
-            />
+            Paciente ID
+            <input value={novoAgendamento.pacienteId} onChange={(event) => setNovoAgendamento({ ...novoAgendamento, pacienteId: event.target.value })} />
           </label>
           <label>
-            CPF
-            <input
-              maxLength={11}
-              value={novoPaciente.cpf}
-              onChange={(event) => setNovoPaciente({ ...novoPaciente, cpf: event.target.value })}
-            />
+            Profissional ID
+            <input value={novoAgendamento.profissionalId} onChange={(event) => setNovoAgendamento({ ...novoAgendamento, profissionalId: event.target.value })} />
           </label>
           <label>
-            Nascimento
-            <input
-              type="date"
-              value={novoPaciente.dataNascimento}
-              onChange={(event) => setNovoPaciente({ ...novoPaciente, dataNascimento: event.target.value })}
-            />
+            Início
+            <input type="datetime-local" value={novoAgendamento.inicio} onChange={(event) => setNovoAgendamento({ ...novoAgendamento, inicio: event.target.value })} />
           </label>
           <label>
-            Telefone
-            <input
-              value={novoPaciente.telefone}
-              onChange={(event) => setNovoPaciente({ ...novoPaciente, telefone: event.target.value })}
-            />
-          </label>
-          <label>
-            CNS
-            <input
-              value={novoPaciente.cns ?? ""}
-              onChange={(event) => setNovoPaciente({ ...novoPaciente, cns: event.target.value })}
-            />
+            Fim
+            <input type="datetime-local" value={novoAgendamento.fim} onChange={(event) => setNovoAgendamento({ ...novoAgendamento, fim: event.target.value })} />
           </label>
         </div>
+        <button className="primary-action" onClick={onCriar} type="button">Salvar</button>
       </section>
 
-      <section className="crud-panel">
-        <div className="crud-heading">
-          <div>
-            <h3>Pacientes cadastrados</h3>
-            <p>{status}</p>
-          </div>
-        </div>
-
-        <div className="data-table" role="table" aria-label="Pacientes cadastrados">
-          <div className="data-row header" role="row">
-            <span>Nome</span>
-            <span>CPF</span>
-            <span>Nascimento</span>
-            <span>Telefone</span>
-            <span>CNS</span>
-          </div>
-          {pacientes.map((paciente) => (
-            <div className="data-row" key={paciente.id} role="row">
-              <strong>{paciente.nome}</strong>
-              <span>{paciente.cpf}</span>
-              <span>{paciente.dataNascimento}</span>
-              <span>{paciente.telefone}</span>
-              <span>{paciente.cns ?? "-"}</span>
-            </div>
-          ))}
-        </div>
+      <section className="work-card wide">
+        <CardTitle title="Agendados" />
+        <button className="secondary-action bordered" onClick={onListar} type="button">Atualizar</button>
+        <SimpleTable
+          columns={["Paciente", "Profissional", "Início", "Fim", "Status"]}
+          rows={agendamentos.map((item) => [
+            item.pacienteId,
+            item.profissionalId,
+            new Date(item.inicio).toLocaleString("pt-BR"),
+            new Date(item.fim).toLocaleString("pt-BR"),
+            item.status
+          ])}
+        />
       </section>
+    </div>
+  );
+}
+
+function FilaPage({
+  agendamentoCheckIn,
+  fila,
+  onCriarCheckIn,
+  onListar,
+  podeCriar,
+  podeListar,
+  setAgendamentoCheckIn,
+  status
+}: {
+  agendamentoCheckIn: string;
+  fila: CheckIn[];
+  onCriarCheckIn: () => void;
+  onListar: () => void;
+  podeCriar: boolean;
+  podeListar: boolean;
+  setAgendamentoCheckIn: (value: string) => void;
+  status: string;
+}) {
+  return (
+    <div className="work-grid">
+      {podeCriar && (
+        <section className="work-card">
+          <CardTitle title="Check-in" status={status} />
+          <label>
+            Agendamento ID
+            <input value={agendamentoCheckIn} onChange={(event) => setAgendamentoCheckIn(event.target.value)} />
+          </label>
+          <button className="primary-action" onClick={onCriarCheckIn} type="button">Registrar</button>
+        </section>
+      )}
+
+      {podeListar && (
+        <section className="work-card wide">
+          <CardTitle title="Hoje" status={status} />
+          <button className="secondary-action bordered" onClick={onListar} type="button">Atualizar</button>
+          <SimpleTable
+            columns={["Check-in", "Paciente", "Profissional", "Status", "Risco"]}
+            rows={fila.map((item) => [
+              item.id,
+              item.pacienteId,
+              item.profissionalId,
+              item.status,
+              item.classificacaoRisco ?? "-"
+            ])}
+          />
+        </section>
+      )}
+    </div>
+  );
+}
+
+function TriagemPage({
+  novaTriagem,
+  onCriar,
+  setNovaTriagem,
+  status
+}: {
+  novaTriagem: CriarTriagemRequest;
+  onCriar: () => void;
+  setNovaTriagem: (value: CriarTriagemRequest) => void;
+  status: string;
+}) {
+  return (
+    <section className="work-card wide">
+      <CardTitle title="Nova triagem" status={status} />
+      <div className="form-grid">
+        <label>
+          Check-in ID
+          <input value={novaTriagem.checkInId} onChange={(event) => setNovaTriagem({ ...novaTriagem, checkInId: event.target.value })} />
+        </label>
+        <label>
+          Temperatura
+          <input type="number" step="0.1" value={novaTriagem.temperatura} onChange={(event) => setNovaTriagem({ ...novaTriagem, temperatura: Number(event.target.value) })} />
+        </label>
+        <label>
+          Sistólica
+          <input type="number" value={novaTriagem.pressaoSistolica} onChange={(event) => setNovaTriagem({ ...novaTriagem, pressaoSistolica: Number(event.target.value) })} />
+        </label>
+        <label>
+          Diastólica
+          <input type="number" value={novaTriagem.pressaoDiastolica} onChange={(event) => setNovaTriagem({ ...novaTriagem, pressaoDiastolica: Number(event.target.value) })} />
+        </label>
+        <label>
+          Batimentos
+          <input type="number" value={novaTriagem.frequenciaCardiaca} onChange={(event) => setNovaTriagem({ ...novaTriagem, frequenciaCardiaca: Number(event.target.value) })} />
+        </label>
+        <label>
+          Risco
+          <select value={novaTriagem.classificacaoRisco} onChange={(event) => setNovaTriagem({ ...novaTriagem, classificacaoRisco: event.target.value })}>
+            <option value="AZUL">Azul</option>
+            <option value="VERDE">Verde</option>
+            <option value="AMARELO">Amarelo</option>
+            <option value="LARANJA">Laranja</option>
+            <option value="VERMELHO">Vermelho</option>
+          </select>
+        </label>
+        <label>
+          Sintomas
+          <input value={novaTriagem.sintomas} onChange={(event) => setNovaTriagem({ ...novaTriagem, sintomas: event.target.value })} />
+        </label>
+        <label>
+          Observações
+          <input value={novaTriagem.observacoes ?? ""} onChange={(event) => setNovaTriagem({ ...novaTriagem, observacoes: event.target.value })} />
+        </label>
+      </div>
+      <button className="primary-action" onClick={onCriar} type="button">Salvar</button>
+    </section>
+  );
+}
+
+function AtendimentosPage({
+  atendimentoCriado,
+  novoAtendimento,
+  onCriar,
+  onFinalizar,
+  setNovoAtendimento,
+  status
+}: {
+  atendimentoCriado: Atendimento | null;
+  novoAtendimento: CriarAtendimentoRequest;
+  onCriar: () => void;
+  onFinalizar: () => void;
+  setNovoAtendimento: (value: CriarAtendimentoRequest) => void;
+  status: string;
+}) {
+  return (
+    <div className="work-grid">
+      <section className="work-card wide">
+        <CardTitle title="Registrar" status={status} />
+        <div className="form-grid">
+          <label>
+            Check-in ID
+            <input value={novoAtendimento.checkInId} onChange={(event) => setNovoAtendimento({ ...novoAtendimento, checkInId: event.target.value })} />
+          </label>
+          <label>
+            Queixa
+            <input value={novoAtendimento.queixa} onChange={(event) => setNovoAtendimento({ ...novoAtendimento, queixa: event.target.value })} />
+          </label>
+          <label>
+            Hipótese
+            <input value={novoAtendimento.hipoteseDiagnostica} onChange={(event) => setNovoAtendimento({ ...novoAtendimento, hipoteseDiagnostica: event.target.value })} />
+          </label>
+          <label>
+            Conduta
+            <input value={novoAtendimento.conduta} onChange={(event) => setNovoAtendimento({ ...novoAtendimento, conduta: event.target.value })} />
+          </label>
+          <label>
+            Prescrição
+            <input value={novoAtendimento.prescricao ?? ""} onChange={(event) => setNovoAtendimento({ ...novoAtendimento, prescricao: event.target.value })} />
+          </label>
+          <label>
+            Encaminhamento
+            <input value={novoAtendimento.encaminhamento ?? ""} onChange={(event) => setNovoAtendimento({ ...novoAtendimento, encaminhamento: event.target.value })} />
+          </label>
+        </div>
+        <button className="primary-action" onClick={onCriar} type="button">Salvar</button>
+      </section>
+
+      {atendimentoCriado && (
+        <section className="work-card">
+          <CardTitle title="Aberto" />
+          <p className="mono-id">{atendimentoCriado.id}</p>
+          <button className="primary-action" disabled={Boolean(atendimentoCriado.finalizadoEm)} onClick={onFinalizar} type="button">
+            Finalizar
+          </button>
+        </section>
+      )}
+    </div>
+  );
+}
+
+function RelatoriosPage({
+  fim,
+  inicio,
+  onCarregar,
+  relatorios,
+  setFim,
+  setInicio,
+  status
+}: {
+  fim: string;
+  inicio: string;
+  onCarregar: () => void;
+  relatorios: ReportsState;
+  setFim: (value: string) => void;
+  setInicio: (value: string) => void;
+  status: string;
+}) {
+  return (
+    <div className="work-grid">
+      <section className="work-card">
+        <CardTitle title="Período" status={status} />
+        <div className="form-grid two-columns">
+          <label>
+            Início
+            <input type="date" value={inicio} onChange={(event) => setInicio(event.target.value)} />
+          </label>
+          <label>
+            Fim
+            <input type="date" value={fim} onChange={(event) => setFim(event.target.value)} />
+          </label>
+        </div>
+        <button className="primary-action" onClick={onCarregar} type="button">Carregar</button>
+      </section>
+
+      <section className="work-card wide">
+        <CardTitle title="Resultado" />
+        <div className="stats-grid">
+          <strong>{relatorios.atendimentos?.totalAtendimentos ?? 0}<span>Atendimentos</span></strong>
+          <strong>{relatorios.atendimentos?.totalFinalizados ?? 0}<span>Finalizados</span></strong>
+          <strong>{relatorios.cancelamentos?.totalCancelamentos ?? 0}<span>Cancelamentos</span></strong>
+        </div>
+        <SimpleTable
+          columns={["Risco", "Total"]}
+          rows={(relatorios.riscos?.itens ?? []).map((item) => [item.classificacaoRisco, String(item.total)])}
+        />
+      </section>
+    </div>
+  );
+}
+
+function AuditoriaPage({
+  auditoria,
+  onListar,
+  status
+}: {
+  auditoria: LogAuditoria[];
+  onListar: () => void;
+  status: string;
+}) {
+  return (
+    <section className="work-card wide">
+      <CardTitle title="Registros" status={status} />
+      <button className="secondary-action bordered" onClick={onListar} type="button">Atualizar</button>
+      <SimpleTable
+        columns={["Ação", "Entidade", "Usuário", "Data"]}
+        rows={auditoria.map((item) => [
+          item.acao,
+          item.entidade,
+          item.usuario,
+          new Date(item.registradoEm).toLocaleString("pt-BR")
+        ])}
+      />
+    </section>
+  );
+}
+
+function CardTitle({ status, title }: { status?: string; title: string }) {
+  return (
+    <div className="card-title">
+      <h2>{title}</h2>
+      {status && <span>{status}</span>}
+    </div>
+  );
+}
+
+function SimpleTable({ columns, rows }: { columns: string[]; rows: string[][] }) {
+  return (
+    <div className="data-table" role="table">
+      <div className="data-row header" role="row" style={{ gridTemplateColumns: `repeat(${columns.length}, minmax(140px, 1fr))` }}>
+        {columns.map((column) => <span key={column}>{column}</span>)}
+      </div>
+      {rows.map((row, index) => (
+        <div className="data-row" key={`${row.join("-")}-${index}`} role="row" style={{ gridTemplateColumns: `repeat(${columns.length}, minmax(140px, 1fr))` }}>
+          {row.map((cell, cellIndex) => cellIndex === 0 ? <strong key={cellIndex}>{cell}</strong> : <span key={cellIndex}>{cell}</span>)}
+        </div>
+      ))}
+      {rows.length === 0 && <div className="empty-row">Nada por aqui.</div>}
     </div>
   );
 }
