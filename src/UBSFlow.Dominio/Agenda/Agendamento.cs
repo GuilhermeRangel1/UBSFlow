@@ -22,4 +22,12 @@ public class Agendamento : Entidade
     public DateTimeOffset Inicio { get; private set; }
     public DateTimeOffset Fim { get; private set; }
     public StatusAgendamento Status { get; private set; }
+
+    public void Remarcar(DateTimeOffset inicio, DateTimeOffset fim)
+    {
+        Inicio = inicio;
+        Fim = fim;
+        Status = StatusAgendamento.Remarcado;
+        MarcarComoAtualizada();
+    }
 }

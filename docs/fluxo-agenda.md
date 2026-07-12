@@ -44,6 +44,18 @@ Content-Type: application/json
 }
 ```
 
+### Remarcar agendamento
+
+```http
+PATCH /agendamentos/{id}/remarcar
+Content-Type: application/json
+
+{
+  "inicio": "2026-07-12T10:00:00-03:00",
+  "fim": "2026-07-12T10:30:00-03:00"
+}
+```
+
 ## Regras iniciais
 
 - paciente e obrigatorio;
@@ -51,4 +63,5 @@ Content-Type: application/json
 - paciente informado precisa existir;
 - profissional informado precisa existir;
 - horario final precisa ser maior que horario inicial;
-- nao permite conflito de horario para o mesmo profissional.
+- nao permite conflito de horario para o mesmo profissional;
+- agendamento cancelado nao pode ser remarcado.

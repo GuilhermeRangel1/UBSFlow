@@ -96,6 +96,72 @@ public class AgendamentoServiceTests
         Assert.Equal(outroProfissional.Id, agendamento.ProfissionalId);
     }
 
+    [Fact]
+    public void Remarcar_DeveAlterarHorarioEStatus()
+    {
+        var contexto = CriarContexto();
+        var agendamento = contexto.Service.Criar(CriarRequest(contexto.Paciente.Id, contexto.Profissional.Id));
+        var request = new RemarcarAgendamentoRequest(
+            new DateTimeOffset(2026, 7, 12, 10, 0, 0, TimeSpan.FromHours(-3)),
+            new DateTimeOffset(2026, 7, 12, 10, 30, 0, TimeSpan.FromHours(-3)));
+
+        var agendamentoRemarcado = contexto.Service.Remarcar(agendamento.Id, request);
+
+        Assert.Equal(StatusAgendamento.Remarcado, agendamentoRemarcado.Status);
+        Assert.Equal(request.Inicio, agendamentoRemarcado.Inicio);
+        Assert.Equal(request.Fim, agendamentoRemarcado.Fim);
+    }
+
+    [Fact]
+    public void Remarcar_NaoDevePermitirAgendamentoInexistente()
+    {
+        var contexto = CriarContexto();
+        var request = new RemarcarAgendamentoRequest(
+            new DateTimeOffset(2026, 7, 12, 10, 0, 0, TimeSpan.FromHours(-3)),
+            new DateTimeOffset(2026, 7, 12, 10, 30, 0, TimeSpan.FromHours(-3)));
+
+        var exception = Assert.Throws<ValidacaoException>(() =>
+            contexto.Service.Remarcar(Guid.NewGuid(), request));
+
+        Assert.Equal("Agendamento informado nao existe.", exception.Message);
+    }
+
+    [Fact]
+    public void Remarcar_NaoDevePermitirHorarioFinalAntesDoInicial()
+    {
+        var contexto = CriarContexto();
+        var agendamento = contexto.Service.Criar(CriarRequest(contexto.Paciente.Id, contexto.Profissional.Id));
+        var request = new RemarcarAgendamentoRequest(
+            new DateTimeOffset(2026, 7, 12, 10, 0, 0, TimeSpan.FromHours(-3)),
+            new DateTimeOffset(2026, 7, 12, 9, 0, 0, TimeSpan.FromHours(-3)));
+
+        var exception = Assert.Throws<ValidacaoException>(() =>
+            contexto.Service.Remarcar(agendamento.Id, request));
+
+        Assert.Equal("Horario final deve ser maior que o horario inicial.", exception.Message);
+    }
+
+    [Fact]
+    public void Remarcar_NaoDevePermitirConflitoComOutroAgendamento()
+    {
+        var contexto = CriarContexto();
+        var primeiroAgendamento = contexto.Service.Criar(
+            CriarRequest(contexto.Paciente.Id, contexto.Profissional.Id));
+        contexto.Service.Criar(CriarRequest(
+            contexto.Paciente.Id,
+            contexto.Profissional.Id,
+            new DateTimeOffset(2026, 7, 12, 10, 0, 0, TimeSpan.FromHours(-3)),
+            new DateTimeOffset(2026, 7, 12, 10, 30, 0, TimeSpan.FromHours(-3))));
+        var request = new RemarcarAgendamentoRequest(
+            new DateTimeOffset(2026, 7, 12, 10, 15, 0, TimeSpan.FromHours(-3)),
+            new DateTimeOffset(2026, 7, 12, 10, 45, 0, TimeSpan.FromHours(-3)));
+
+        var exception = Assert.Throws<InvalidOperationException>(() =>
+            contexto.Service.Remarcar(primeiroAgendamento.Id, request));
+
+        Assert.Equal("Profissional ja possui agendamento neste horario.", exception.Message);
+    }
+
     private static CriarAgendamentoRequest CriarRequest(
         Guid pacienteId,
         Guid profissionalId)

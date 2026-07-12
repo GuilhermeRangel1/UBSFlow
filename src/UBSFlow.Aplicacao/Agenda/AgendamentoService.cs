@@ -97,13 +97,57 @@ public class AgendamentoService
         return MapearAgendamento(agendamento);
     }
 
+    public AgendamentoResponse Remarcar(Guid id, RemarcarAgendamentoRequest request)
+    {
+        ValidarPeriodo(request.Inicio, request.Fim);
+
+        var agendamento = agendamentoRepositorio.ObterPorId(id);
+
+        if (agendamento is null)
+        {
+            throw new ValidacaoException("Agendamento informado nao existe.");
+        }
+
+        if (agendamento.Status == StatusAgendamento.Cancelado)
+        {
+            throw new InvalidOperationException("Agendamento cancelado nao pode ser remarcado.");
+        }
+
+        if (ExisteConflitoDeHorario(
+            agendamento.ProfissionalId,
+            request.Inicio,
+            request.Fim,
+            agendamento.Id))
+        {
+            throw new InvalidOperationException("Profissional ja possui agendamento neste horario.");
+        }
+
+        agendamento.Remarcar(request.Inicio, request.Fim);
+
+        return MapearAgendamento(agendamento);
+    }
+
     private bool ExisteConflitoDeHorario(CriarAgendamentoRequest request)
     {
+        return ExisteConflitoDeHorario(
+            request.ProfissionalId,
+            request.Inicio,
+            request.Fim,
+            null);
+    }
+
+    private bool ExisteConflitoDeHorario(
+        Guid profissionalId,
+        DateTimeOffset inicio,
+        DateTimeOffset fim,
+        Guid? agendamentoIgnoradoId)
+    {
         return agendamentoRepositorio.Listar().Any(agendamento =>
-            agendamento.ProfissionalId == request.ProfissionalId &&
+            agendamento.Id != agendamentoIgnoradoId &&
+            agendamento.ProfissionalId == profissionalId &&
             agendamento.Status != StatusAgendamento.Cancelado &&
-            request.Inicio < agendamento.Fim &&
-            request.Fim > agendamento.Inicio);
+            inicio < agendamento.Fim &&
+            fim > agendamento.Inicio);
     }
 
     private static void ValidarCriacao(CriarAgendamentoRequest request)
@@ -118,7 +162,12 @@ public class AgendamentoService
             throw new ValidacaoException("Profissional e obrigatorio.");
         }
 
-        if (request.Fim <= request.Inicio)
+        ValidarPeriodo(request.Inicio, request.Fim);
+    }
+
+    private static void ValidarPeriodo(DateTimeOffset inicio, DateTimeOffset fim)
+    {
+        if (fim <= inicio)
         {
             throw new ValidacaoException("Horario final deve ser maior que o horario inicial.");
         }

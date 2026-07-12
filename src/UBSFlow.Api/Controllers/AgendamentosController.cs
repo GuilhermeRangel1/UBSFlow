@@ -66,4 +66,21 @@ public class AgendamentosController : ControllerBase
             return BadRequest(new { mensagem = exception.Message });
         }
     }
+
+    [HttpPatch("{id:guid}/remarcar")]
+    public IActionResult Remarcar(Guid id, RemarcarAgendamentoRequest request)
+    {
+        try
+        {
+            return Ok(agendamentoService.Remarcar(id, request));
+        }
+        catch (InvalidOperationException exception)
+        {
+            return Conflict(new { mensagem = exception.Message });
+        }
+        catch (ValidacaoException exception)
+        {
+            return BadRequest(new { mensagem = exception.Message });
+        }
+    }
 }
