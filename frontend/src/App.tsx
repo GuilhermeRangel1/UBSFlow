@@ -802,7 +802,34 @@ function PortfolioLanding({
       <section className="story-section" id="fluxo">
         <div className="section-heading">
           <span>Jornada</span>
-          <h2>Da chegada ao fechamento.</h2>
+          <h2>Cada etapa abre a próxima.</h2>
+        </div>
+        <div className="landing-flow">
+          <article>
+            <CalendarClock size={24} />
+            <span>01</span>
+            <strong>Agenda</strong>
+          </article>
+          <article>
+            <ClipboardList size={24} />
+            <span>02</span>
+            <strong>Chegada</strong>
+          </article>
+          <article>
+            <HeartPulse size={24} />
+            <span>03</span>
+            <strong>Triagem</strong>
+          </article>
+          <article>
+            <Stethoscope size={24} />
+            <span>04</span>
+            <strong>Consulta</strong>
+          </article>
+          <article>
+            <BarChart3 size={24} />
+            <span>05</span>
+            <strong>Gestão</strong>
+          </article>
         </div>
       </section>
 

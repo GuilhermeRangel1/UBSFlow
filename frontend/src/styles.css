@@ -439,6 +439,44 @@ a {
   overflow-x: auto;
 }
 
+.landing-flow {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.landing-flow article {
+  min-height: 210px;
+  display: grid;
+  align-content: end;
+  gap: 12px;
+  padding: 22px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 34px;
+  color: #ffffff;
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.09), rgba(255, 255, 255, 0.03)),
+    #0b0f17;
+}
+
+.landing-flow article:nth-child(even) {
+  transform: translateY(26px);
+}
+
+.landing-flow svg,
+.landing-flow span {
+  color: #ff3440;
+}
+
+.landing-flow span {
+  font-size: 0.78rem;
+  font-weight: 900;
+}
+
+.landing-flow strong {
+  font-size: 1.35rem;
+}
+
 .story-track::before {
   content: "";
   position: absolute;
@@ -1692,6 +1730,7 @@ a {
   .journey-map,
   .queue-lanes,
   .page-hero,
+  .landing-flow,
   .split-console {
     grid-template-columns: 1fr;
   }
