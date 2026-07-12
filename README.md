@@ -68,6 +68,14 @@ Historico de alteracoes importantes, como alteracao de paciente, cancelamento de
 - Serilog
 - GitHub Actions
 
+## CI
+
+O projeto possui workflow de GitHub Actions em `.github/workflows/dotnet-ci.yml` para executar:
+
+- `dotnet restore`
+- `dotnet build`
+- `dotnet test`
+
 ## Como Rodar Localmente
 
 Restaure os pacotes:
