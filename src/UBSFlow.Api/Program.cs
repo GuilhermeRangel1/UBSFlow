@@ -17,7 +17,6 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
 app.MapControllers();
 
 app.MapGet("/health", () => Results.Ok(new { status = "Healthy" }))

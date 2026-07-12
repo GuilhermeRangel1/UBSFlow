@@ -32,6 +32,18 @@ List<Paciente>
 
 ## Endpoints criados
 
+Ao rodar localmente com `dotnet run --project src/UBSFlow.Api`, a API fica disponivel em:
+
+```text
+http://localhost:5000
+```
+
+O Swagger fica em:
+
+```text
+http://localhost:5000/swagger
+```
+
 ### Listar pacientes
 
 ```http
