@@ -41,9 +41,10 @@ a {
   min-height: 100vh;
   color: #f8fafc;
   background:
-    radial-gradient(circle at 70% 10%, rgba(0, 180, 190, 0.28), transparent 28%),
-    radial-gradient(circle at 22% 36%, rgba(73, 88, 210, 0.18), transparent 24%),
-    #05080d;
+    radial-gradient(circle at 78% 8%, rgba(35, 214, 196, 0.32), transparent 26%),
+    radial-gradient(circle at 16% 26%, rgba(97, 139, 255, 0.18), transparent 28%),
+    linear-gradient(180deg, #061012 0%, #030508 58%, #05080d 100%);
+  overflow-x: hidden;
 }
 
 .portfolio-nav {
@@ -59,7 +60,6 @@ a {
 .portfolio-brand,
 .portfolio-links,
 .portfolio-actions,
-.showcase-topbar,
 .pulse-line,
 .session-heading {
   display: flex;
@@ -75,7 +75,7 @@ a {
   height: 38px;
   display: grid;
   place-items: center;
-  border-radius: 8px;
+  border-radius: 16px 16px 16px 4px;
   color: #ffffff;
   background: linear-gradient(135deg, #00a6b4, #006d77);
   box-shadow: 0 14px 30px rgba(0, 166, 180, 0.32);
@@ -91,7 +91,7 @@ a {
 
 .portfolio-links a {
   padding: 9px 12px;
-  border-radius: 8px;
+  border-radius: 999px;
   color: rgba(248, 250, 252, 0.72);
   font-size: 0.9rem;
   font-weight: 700;
@@ -107,9 +107,9 @@ a {
   min-height: calc(100vh - 76px);
   margin: 0 auto;
   display: grid;
-  grid-template-columns: minmax(0, 0.95fr) minmax(360px, 0.8fr);
+  grid-template-columns: minmax(0, 0.9fr) minmax(360px, 0.86fr);
   align-items: center;
-  gap: 44px;
+  gap: 54px;
   padding: 44px 0 84px;
 }
 
@@ -134,6 +134,7 @@ a {
   margin: 0;
   font-size: clamp(3rem, 7vw, 6.8rem);
   line-height: 0.92;
+  letter-spacing: -0.04em;
 }
 
 .hero-copy p {
@@ -152,7 +153,7 @@ a {
 .landing-primary,
 .landing-secondary {
   min-height: 48px;
-  border-radius: 8px;
+  border-radius: 999px;
   border: 0;
   display: inline-flex;
   align-items: center;
@@ -179,47 +180,46 @@ a {
 }
 
 .showcase-panel {
-  min-height: 520px;
+  min-height: 560px;
+  position: relative;
   padding: 0;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
-  background:
-    linear-gradient(145deg, rgba(49, 215, 210, 0.14), rgba(255, 255, 255, 0.02) 32%, rgba(0, 0, 0, 0.22)),
-    url("https://images.unsplash.com/photo-1584515933487-779824d29309?auto=format&fit=crop&w=1200&q=85");
-  background-size: cover;
-  background-position: center;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 48px 48px 14px 48px;
+  background: #101820;
   box-shadow: 0 34px 90px rgba(0, 0, 0, 0.46);
   overflow: hidden;
   transform: rotate(1deg);
 }
 
-.showcase-topbar {
-  width: calc(100% - 36px);
-  height: 34px;
-  gap: 7px;
-  margin: 18px;
-  padding: 0 10px;
-  border-radius: 8px;
-  background: rgba(5, 8, 13, 0.64);
-  backdrop-filter: blur(12px);
+.showcase-panel::before {
+  content: "";
+  position: absolute;
+  inset: 18px;
+  z-index: 2;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 36px 36px 10px 36px;
+  pointer-events: none;
 }
 
-.showcase-topbar span {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.52);
+.showcase-panel video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .showcase-screen {
-  min-height: 468px;
+  min-height: 560px;
+  position: relative;
+  z-index: 1;
   display: grid;
   align-content: end;
   gap: 22px;
-  padding: 24px 28px 28px;
+  padding: 44px 44px 40px;
   background:
-    linear-gradient(180deg, rgba(5, 8, 13, 0), rgba(5, 8, 13, 0.9)),
-    linear-gradient(90deg, rgba(5, 8, 13, 0.74), transparent 52%);
+    linear-gradient(180deg, rgba(5, 8, 13, 0.02), rgba(5, 8, 13, 0.88)),
+    linear-gradient(90deg, rgba(5, 8, 13, 0.8), transparent 58%);
   transform: rotate(-1deg);
 }
 
@@ -232,7 +232,8 @@ a {
 .showcase-screen strong {
   display: block;
   margin-top: 4px;
-  font-size: 2rem;
+  font-size: 2.5rem;
+  letter-spacing: -0.04em;
 }
 
 .pulse-line {
@@ -263,7 +264,7 @@ a {
 .patient-stack article {
   padding: 14px 16px;
   border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 8px;
+  border-radius: 24px;
   background: rgba(5, 8, 13, 0.48);
   backdrop-filter: blur(16px);
 }
@@ -280,6 +281,55 @@ a {
 .patient-stack b {
   display: block;
   margin-bottom: 3px;
+}
+
+.media-ribbon {
+  width: min(1180px, calc(100% - 40px));
+  margin: -34px auto 24px;
+  display: grid;
+  grid-template-columns: 0.8fr 1.18fr 0.72fr minmax(220px, 0.7fr);
+  align-items: end;
+  gap: 14px;
+}
+
+.media-ribbon img {
+  width: 100%;
+  height: 210px;
+  object-fit: cover;
+  border-radius: 999px;
+  filter: saturate(1.05) contrast(1.03);
+}
+
+.media-ribbon img:nth-child(2) {
+  height: 270px;
+  border-radius: 42px;
+}
+
+.media-ribbon img:nth-child(3) {
+  height: 190px;
+  border-radius: 32px 999px 999px 32px;
+}
+
+.media-ribbon div {
+  min-height: 190px;
+  display: grid;
+  align-content: center;
+  gap: 8px;
+  padding: 24px;
+  border-radius: 36px;
+  color: #061012;
+  background: #31d7d2;
+}
+
+.media-ribbon span {
+  font-size: 0.74rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.media-ribbon strong {
+  font-size: 1.35rem;
+  line-height: 1.08;
 }
 
 .portfolio-section,
@@ -336,7 +386,7 @@ a {
 
 .landing-login {
   border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 8px;
+  border-radius: 34px;
   background: rgba(255, 255, 255, 0.07);
   backdrop-filter: blur(18px);
 }
@@ -357,7 +407,7 @@ a {
   padding: 12px;
   color: #031316;
   background: #31d7d2;
-  border-radius: 8px;
+  border-radius: 22px 22px 22px 4px;
 }
 
 .feature-reel article:nth-child(2) {
@@ -476,7 +526,7 @@ a {
   min-height: 42px;
   width: 100%;
   border: 1px solid rgba(255, 255, 255, 0.16);
-  border-radius: 8px;
+  border-radius: 999px;
   padding: 0 12px;
   color: #ffffff;
   background: rgba(5, 8, 13, 0.7);
@@ -1157,6 +1207,11 @@ a {
     grid-template-columns: 1fr;
   }
 
+  .media-ribbon {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    margin-top: 0;
+  }
+
   .showcase-panel {
     min-height: 440px;
   }
@@ -1226,11 +1281,23 @@ a {
 
   .showcase-panel {
     min-height: 390px;
+    border-radius: 34px 34px 12px 34px;
   }
 
   .showcase-screen {
     min-height: 328px;
     padding: 18px;
+  }
+
+  .media-ribbon {
+    grid-template-columns: 1fr;
+  }
+
+  .media-ribbon img,
+  .media-ribbon img:nth-child(2),
+  .media-ribbon img:nth-child(3) {
+    height: 220px;
+    border-radius: 28px;
   }
 
   .content,

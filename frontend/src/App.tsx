@@ -543,14 +543,21 @@ function PortfolioLanding({
         </div>
 
         <div className="showcase-panel" aria-label="Preview do UBSFlow">
-          <div className="showcase-topbar">
-            <span />
-            <span />
-            <span />
-          </div>
+          <video
+            autoPlay
+            loop
+            muted
+            playsInline
+            poster="https://images.unsplash.com/photo-1584515933487-779824d29309?auto=format&fit=crop&w=1200&q=85"
+          >
+            <source
+              src="https://cdn.coverr.co/videos/coverr-medical-team-discussing-patient-results-5133/1080p.mp4"
+              type="video/mp4"
+            />
+          </video>
           <div className="showcase-screen">
             <div>
-              <small>Fila em tempo real</small>
+              <small>Operacao em movimento</small>
               <strong>Triagem prioritaria</strong>
             </div>
             <div className="pulse-line">
@@ -576,26 +583,45 @@ function PortfolioLanding({
         </div>
       </section>
 
+      <section className="media-ribbon" aria-label="Visao visual do produto">
+        <img
+          alt="Profissional de saude em atendimento"
+          src="https://images.unsplash.com/photo-1551076805-e1869033e561?auto=format&fit=crop&w=900&q=80"
+        />
+        <img
+          alt="Corredor de unidade de saude"
+          src="https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?auto=format&fit=crop&w=900&q=80"
+        />
+        <img
+          alt="Equipe analisando dados clinicos"
+          src="https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=900&q=80"
+        />
+        <div>
+          <span>Visual + backend</span>
+          <strong>Uma demo para prender o olhar antes do Swagger.</strong>
+        </div>
+      </section>
+
       <section className="portfolio-section" id="produto">
         <div className="section-heading">
           <span>Por que existe</span>
-          <h2>Mais do que cadastro: um fluxo completo de atendimento.</h2>
+          <h2>O fluxo inteiro, embalado como produto.</h2>
         </div>
         <div className="feature-reel">
           <article>
             <UserRound size={24} />
-            <strong>Cadastro com contexto</strong>
-            <p>Pacientes entram no sistema conectados a historico, fila e atendimentos.</p>
+            <strong>Paciente</strong>
+            <p>Cadastro, busca e historico entram como porta de entrada do atendimento.</p>
           </article>
           <article>
             <HeartPulse size={24} />
-            <strong>Triagem com regra</strong>
-            <p>Classificacao de risco e prioridade automatica mostram regra de negocio real.</p>
+            <strong>Prioridade</strong>
+            <p>Triagem, sinais vitais e risco mostram regra de negocio, nao tela decorativa.</p>
           </article>
           <article>
             <ShieldCheck size={24} />
-            <strong>RBAC e auditoria</strong>
-            <p>Cada perfil acessa o que faz sentido, com rastreio das acoes importantes.</p>
+            <strong>Controle</strong>
+            <p>RBAC, auditoria e persistencia fecham a historia tecnica do projeto.</p>
           </article>
         </div>
       </section>
