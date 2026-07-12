@@ -82,6 +82,18 @@ npm run dev
 
 O frontend abre em `http://localhost:5173` e encaminha chamadas de `/api` para a API em `http://localhost:5000`.
 
+Com Docker Compose, o frontend tambem sobe junto com a API e o PostgreSQL:
+
+```bash
+docker compose up -d --build
+```
+
+Depois acesse:
+
+```text
+http://localhost:5173
+```
+
 ## Proximos Incrementos Tecnicos
 
 - FluentValidation para centralizar validacoes.
@@ -115,7 +127,7 @@ Suba o PostgreSQL:
 docker compose up -d
 ```
 
-Para subir API e PostgreSQL juntos via Docker:
+Para subir frontend, API e PostgreSQL juntos via Docker:
 
 ```bash
 docker compose up -d --build

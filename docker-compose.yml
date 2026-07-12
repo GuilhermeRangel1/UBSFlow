@@ -1,4 +1,16 @@
 services:
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: ubsflow-frontend
+    depends_on:
+      - api
+    environment:
+      VITE_PROXY_TARGET: http://api:8080
+    ports:
+      - "5173:5173"
+
   api:
     build:
       context: .
