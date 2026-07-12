@@ -25,6 +25,8 @@ Authorization: Bearer seu-token-aqui
 
 ## Usuarios de demonstracao
 
+Os usuarios abaixo sao criados por migration no banco de dados. As senhas ficam armazenadas como hash, nao como texto puro.
+
 | Usuario | Senha | Papel |
 | --- | --- | --- |
 | admin | admin123 | ADMIN |

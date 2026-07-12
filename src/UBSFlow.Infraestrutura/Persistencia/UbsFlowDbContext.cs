@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using UBSFlow.Dominio.Agenda;
 using UBSFlow.Dominio.Atendimentos;
+using UBSFlow.Dominio.Autenticacao;
 using UBSFlow.Dominio.Auditoria;
 using UBSFlow.Dominio.Fila;
 using UBSFlow.Dominio.Pacientes;
@@ -23,6 +24,7 @@ public class UbsFlowDbContext : DbContext
     public DbSet<Triagem> Triagens => Set<Triagem>();
     public DbSet<Atendimento> Atendimentos => Set<Atendimento>();
     public DbSet<LogAuditoria> LogsAuditoria => Set<LogAuditoria>();
+    public DbSet<UsuarioSistema> Usuarios => Set<UsuarioSistema>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -33,6 +35,7 @@ public class UbsFlowDbContext : DbContext
         ConfigurarTriagens(modelBuilder);
         ConfigurarAtendimentos(modelBuilder);
         ConfigurarAuditoria(modelBuilder);
+        ConfigurarUsuarios(modelBuilder);
     }
 
     private static void ConfigurarPacientes(ModelBuilder modelBuilder)
@@ -136,6 +139,72 @@ public class UbsFlowDbContext : DbContext
             entity.Property(log => log.Usuario).HasMaxLength(120).IsRequired();
             entity.Property(log => log.Descricao).HasMaxLength(1000).IsRequired();
             entity.HasIndex(log => log.RegistradoEm);
+        });
+    }
+
+    private static void ConfigurarUsuarios(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<UsuarioSistema>(entity =>
+        {
+            entity.ToTable("usuarios");
+            entity.HasKey(usuario => usuario.Id);
+            entity.Property(usuario => usuario.Nome).HasMaxLength(160).IsRequired();
+            entity.Property(usuario => usuario.Login).HasMaxLength(80).IsRequired();
+            entity.Property(usuario => usuario.SenhaHash).HasMaxLength(64).IsRequired();
+            entity.Property(usuario => usuario.Papel).HasMaxLength(30).IsRequired();
+            entity.HasIndex(usuario => usuario.Login).IsUnique();
+
+            entity.HasData(
+                new
+                {
+                    Id = Guid.Parse("11111111-1111-1111-1111-111111111111"),
+                    CriadoEm = new DateTimeOffset(2026, 7, 12, 0, 0, 0, TimeSpan.Zero),
+                    Nome = "Administrador",
+                    Login = "admin",
+                    SenhaHash = "240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9",
+                    Papel = "ADMIN",
+                    Ativo = true
+                },
+                new
+                {
+                    Id = Guid.Parse("22222222-2222-2222-2222-222222222222"),
+                    CriadoEm = new DateTimeOffset(2026, 7, 12, 0, 0, 0, TimeSpan.Zero),
+                    Nome = "Recepcao UBS",
+                    Login = "recepcao",
+                    SenhaHash = "2b2f7d1f89222d7211f2befb172fa7267c44ef66f9e074a7902dc39ce7c829a2",
+                    Papel = "RECEPCIONISTA",
+                    Ativo = true
+                },
+                new
+                {
+                    Id = Guid.Parse("33333333-3333-3333-3333-333333333333"),
+                    CriadoEm = new DateTimeOffset(2026, 7, 12, 0, 0, 0, TimeSpan.Zero),
+                    Nome = "Enfermagem UBS",
+                    Login = "enfermagem",
+                    SenhaHash = "354e5812214dc445b5f82fd0183b7f0fb0eff7bd769d5dfff724f37db0d9b010",
+                    Papel = "ENFERMEIRO",
+                    Ativo = true
+                },
+                new
+                {
+                    Id = Guid.Parse("44444444-4444-4444-4444-444444444444"),
+                    CriadoEm = new DateTimeOffset(2026, 7, 12, 0, 0, 0, TimeSpan.Zero),
+                    Nome = "Medico UBS",
+                    Login = "medico",
+                    SenhaHash = "673ab82a6530ee3bd9b04ee72a4d66afa7fa059aedc685cf44e35d29d90ebafa",
+                    Papel = "MEDICO",
+                    Ativo = true
+                },
+                new
+                {
+                    Id = Guid.Parse("55555555-5555-5555-5555-555555555555"),
+                    CriadoEm = new DateTimeOffset(2026, 7, 12, 0, 0, 0, TimeSpan.Zero),
+                    Nome = "Gestao UBS",
+                    Login = "gestao",
+                    SenhaHash = "68c0bffdcdb90414371ae21018e04c9cb56d296a23309ccbd7717fc9e41a33b0",
+                    Papel = "GESTOR",
+                    Ativo = true
+                });
         });
     }
 }

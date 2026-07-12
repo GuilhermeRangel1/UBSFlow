@@ -4,14 +4,16 @@ namespace UBSFlow.Aplicacao.Autenticacao;
 
 public class AuthService
 {
-    private static readonly IReadOnlyCollection<UsuarioSistema> Usuarios =
-    [
-        new UsuarioSistema(Guid.Parse("11111111-1111-1111-1111-111111111111"), "Administrador", "admin", "admin123", "ADMIN"),
-        new UsuarioSistema(Guid.Parse("22222222-2222-2222-2222-222222222222"), "Recepcao UBS", "recepcao", "recepcao123", "RECEPCIONISTA"),
-        new UsuarioSistema(Guid.Parse("33333333-3333-3333-3333-333333333333"), "Enfermagem UBS", "enfermagem", "enfermagem123", "ENFERMEIRO"),
-        new UsuarioSistema(Guid.Parse("44444444-4444-4444-4444-444444444444"), "Medico UBS", "medico", "medico123", "MEDICO"),
-        new UsuarioSistema(Guid.Parse("55555555-5555-5555-5555-555555555555"), "Gestao UBS", "gestao", "gestao123", "GESTOR")
-    ];
+    private readonly ISenhaHasher senhaHasher;
+    private readonly IUsuarioRepositorio usuarioRepositorio;
+
+    public AuthService(
+        IUsuarioRepositorio usuarioRepositorio,
+        ISenhaHasher senhaHasher)
+    {
+        this.usuarioRepositorio = usuarioRepositorio;
+        this.senhaHasher = senhaHasher;
+    }
 
     public UsuarioAutenticadoResponse Autenticar(LoginRequest request)
     {
@@ -25,11 +27,11 @@ public class AuthService
             throw new ValidacaoException("Senha e obrigatoria.");
         }
 
-        var usuario = Usuarios.FirstOrDefault(usuario =>
-            usuario.Login.Equals(request.Usuario, StringComparison.OrdinalIgnoreCase) &&
-            usuario.Senha == request.Senha);
+        var usuario = usuarioRepositorio.ObterPorLogin(request.Usuario);
 
-        if (usuario is null)
+        if (usuario is null ||
+            !usuario.Ativo ||
+            !senhaHasher.Verificar(request.Senha, usuario.SenhaHash))
         {
             throw new UnauthorizedAccessException("Usuario ou senha invalidos.");
         }
@@ -40,11 +42,4 @@ public class AuthService
             usuario.Login,
             usuario.Papel);
     }
-
-    private sealed record UsuarioSistema(
-        Guid Id,
-        string Nome,
-        string Login,
-        string Senha,
-        string Papel);
 }

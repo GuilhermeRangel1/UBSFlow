@@ -25,6 +25,7 @@ public static class DependencyInjection
         services.AddScoped<RelatorioService>();
         services.AddScoped<AuditoriaService>();
         services.AddScoped<AuthService>();
+        services.AddScoped<ISenhaHasher, SenhaHasher>();
 
         return services;
     }

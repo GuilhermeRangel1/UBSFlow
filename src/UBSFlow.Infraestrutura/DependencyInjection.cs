@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using UBSFlow.Aplicacao.Agenda;
 using UBSFlow.Aplicacao.Auditoria;
 using UBSFlow.Aplicacao.Atendimentos;
+using UBSFlow.Aplicacao.Autenticacao;
 using UBSFlow.Aplicacao.Fila;
 using UBSFlow.Aplicacao.Pacientes;
 using UBSFlow.Aplicacao.Profissionais;
@@ -11,6 +12,7 @@ using UBSFlow.Aplicacao.Triagens;
 using UBSFlow.Infraestrutura.Agenda;
 using UBSFlow.Infraestrutura.Auditoria;
 using UBSFlow.Infraestrutura.Atendimentos;
+using UBSFlow.Infraestrutura.Autenticacao;
 using UBSFlow.Infraestrutura.Fila;
 using UBSFlow.Infraestrutura.Pacientes;
 using UBSFlow.Infraestrutura.Persistencia;
@@ -35,6 +37,7 @@ public static class DependencyInjection
         services.AddScoped<ITriagemRepositorio, TriagemRepositorioEf>();
         services.AddScoped<IAtendimentoRepositorio, AtendimentoRepositorioEf>();
         services.AddScoped<IAuditoriaRepositorio, AuditoriaRepositorioEf>();
+        services.AddScoped<IUsuarioRepositorio, UsuarioRepositorioEf>();
 
         return services;
     }
