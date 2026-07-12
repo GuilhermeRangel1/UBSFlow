@@ -1,7 +1,9 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using UBSFlow.Aplicacao.Agenda;
 using UBSFlow.Aplicacao.Pacientes;
 using UBSFlow.Aplicacao.Profissionais;
+using UBSFlow.Infraestrutura.Agenda;
 using UBSFlow.Infraestrutura.Pacientes;
 using UBSFlow.Infraestrutura.Profissionais;
 
@@ -17,6 +19,7 @@ public static class DependencyInjection
 
         services.AddSingleton<IPacienteRepositorio, PacienteRepositorioEmMemoria>();
         services.AddSingleton<IProfissionalRepositorio, ProfissionalRepositorioEmMemoria>();
+        services.AddSingleton<IAgendamentoRepositorio, AgendamentoRepositorioEmMemoria>();
 
         return services;
     }
