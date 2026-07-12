@@ -64,9 +64,15 @@ Historico de alteracoes importantes, como alteracao de paciente, cancelamento de
 - Swagger/OpenAPI
 - Docker Compose
 - xUnit
-- FluentValidation
 - Serilog
 - GitHub Actions
+
+## Proximos Incrementos Tecnicos
+
+- FluentValidation para centralizar validacoes.
+- Hash de senha mais forte com salt por usuario.
+- Testes de integracao com PostgreSQL.
+- Aplicacao automatica de migrations em ambiente de desenvolvimento.
 
 ## CI
 
