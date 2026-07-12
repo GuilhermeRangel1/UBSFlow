@@ -15,6 +15,13 @@ Agora a infraestrutura ja possui:
 docker compose up -d
 ```
 
+## Aplicar migrations
+
+```bash
+dotnet tool restore
+dotnet tool run dotnet-ef database update --project src/UBSFlow.Infraestrutura --startup-project src/UBSFlow.Api --context UbsFlowDbContext
+```
+
 Dados locais:
 
 ```text

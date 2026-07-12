@@ -54,9 +54,9 @@ Indicadores como atendimentos por periodo, tempo medio de espera, casos por clas
 
 Historico de alteracoes importantes, como alteracao de paciente, cancelamento de consulta e fechamento de atendimento.
 
-## Stack Planejada
+## Stack
 
-- C# / .NET 8 ou .NET 9
+- C# / .NET 8
 - ASP.NET Core Web API
 - PostgreSQL
 - Entity Framework Core
@@ -67,6 +67,39 @@ Historico de alteracoes importantes, como alteracao de paciente, cancelamento de
 - FluentValidation
 - Serilog
 - GitHub Actions
+
+## Como Rodar Localmente
+
+Restaure os pacotes:
+
+```bash
+dotnet restore
+```
+
+Suba o PostgreSQL:
+
+```bash
+docker compose up -d
+```
+
+Aplique as migrations:
+
+```bash
+dotnet tool restore
+dotnet tool run dotnet-ef database update --project src/UBSFlow.Infraestrutura --startup-project src/UBSFlow.Api --context UbsFlowDbContext
+```
+
+Rode a API:
+
+```bash
+dotnet run --project src/UBSFlow.Api
+```
+
+Swagger:
+
+```text
+http://localhost:5000/swagger
+```
 
 ## Regras de Negocio
 
@@ -81,7 +114,7 @@ Historico de alteracoes importantes, como alteracao de paciente, cancelamento de
 - Aplicar paginacao e filtros nas listagens.
 - Permitir relatorios por periodo, unidade e profissional.
 
-## Endpoints Planejados
+## Endpoints
 
 ### Autenticacao
 
@@ -89,45 +122,61 @@ Historico de alteracoes importantes, como alteracao de paciente, cancelamento de
 
 ### Pacientes
 
-- `GET /patients`
-- `POST /patients`
-- `GET /patients/{id}/history`
+- `GET /pacientes`
+- `POST /pacientes`
+- `GET /pacientes/{id}`
+- `GET /pacientes/{id}/historico`
 
 ### Profissionais
 
-- `POST /professionals`
-- `GET /professionals/{id}/availability`
+- `GET /profissionais`
+- `POST /profissionais`
+- `GET /profissionais/{id}`
 
 ### Agenda
 
-- `POST /appointments`
-- `PATCH /appointments/{id}/reschedule`
-- `PATCH /appointments/{id}/cancel`
+- `GET /agendamentos`
+- `POST /agendamentos`
+- `GET /agendamentos/{id}`
+- `PATCH /agendamentos/{id}/remarcar`
+- `PATCH /agendamentos/{id}/cancelar`
 
 ### Fila
 
-- `POST /check-ins`
-- `GET /queues/today`
+- `POST /fila/check-ins`
+- `GET /fila/hoje`
+- `GET /fila`
 
 ### Triagem
 
-- `POST /triages`
-- `GET /triages/{id}`
+- `POST /triagens`
+- `GET /triagens/{id}`
 
 ### Atendimento
 
-- `POST /consultations`
-- `PATCH /consultations/{id}/finish`
+- `POST /atendimentos`
+- `GET /atendimentos/{id}`
+- `PATCH /atendimentos/{id}/finalizar`
 
 ### Relatorios
 
-- `GET /reports/appointments`
-- `GET /reports/waiting-time`
-- `GET /reports/risk-classifications`
+- `GET /relatorios/atendimentos`
+- `GET /relatorios/classificacoes-risco`
+- `GET /relatorios/cancelamentos`
 
 ### Auditoria
 
-- `GET /audit-logs`
+- `GET /auditoria`
+
+## Usuarios de Demonstracao
+
+| Usuario | Senha | Papel |
+| --- | --- | --- |
+| admin | admin123 | ADMIN |
+| recepcao | recepcao123 | RECEPCIONISTA |
+| enfermagem | enfermagem123 | ENFERMEIRO |
+| medico | medico123 | MEDICO |
+| gestao | gestao123 | GESTOR |
 
 ## Roadmap
 
