@@ -17,8 +17,16 @@ import {
   UserRound,
   UsersRound
 } from "lucide-react";
-import { useMemo, useState } from "react";
-import { demoUsers, login, type LoginResponse } from "./api/ubsflowApi";
+import { useEffect, useMemo, useState } from "react";
+import {
+  criarPaciente,
+  demoUsers,
+  listarPacientes,
+  login,
+  type CriarPacienteRequest,
+  type LoginResponse,
+  type Paciente
+} from "./api/ubsflowApi";
 
 type ModuleKey =
   | "visao-geral"
@@ -139,6 +147,17 @@ export function App() {
   const [senha, setSenha] = useState("medico123");
   const [session, setSession] = useState<LoginResponse | null>(null);
   const [loginStatus, setLoginStatus] = useState("Pronto para autenticar");
+  const [pacientes, setPacientes] = useState<Paciente[]>([]);
+  const [pacientesStatus, setPacientesStatus] = useState("Entre para carregar pacientes.");
+  const [filtroNome, setFiltroNome] = useState("");
+  const [filtroCpf, setFiltroCpf] = useState("");
+  const [novoPaciente, setNovoPaciente] = useState<CriarPacienteRequest>({
+    nome: "",
+    cpf: "",
+    dataNascimento: "",
+    telefone: "",
+    cns: ""
+  });
 
   const selectedModule = useMemo(
     () => modules.find((module) => module.key === activeModule) ?? modules[0],
@@ -152,11 +171,64 @@ export function App() {
       const response = await login(usuario, senha);
       setSession(response);
       setLoginStatus(`Sessao ativa para ${response.usuario.nome}`);
+      setActiveModule("pacientes");
     } catch (error) {
       setSession(null);
       setLoginStatus(error instanceof Error ? error.message : "Falha no login.");
     }
   }
+
+  async function carregarPacientes() {
+    if (!session) {
+      setPacientesStatus("Faca login para carregar pacientes.");
+      return;
+    }
+
+    setPacientesStatus("Carregando pacientes...");
+
+    try {
+      const response = await listarPacientes(session.token, {
+        nome: filtroNome.trim(),
+        cpf: filtroCpf.trim()
+      });
+      setPacientes(response.itens);
+      setPacientesStatus(
+        response.totalItens === 0
+          ? "Nenhum paciente encontrado."
+          : `${response.totalItens} paciente(s) encontrado(s).`
+      );
+    } catch (error) {
+      setPacientesStatus(error instanceof Error ? error.message : "Falha ao carregar pacientes.");
+    }
+  }
+
+  async function handleCriarPaciente() {
+    if (!session) {
+      setPacientesStatus("Faca login como ADMIN ou RECEPCIONISTA para cadastrar.");
+      return;
+    }
+
+    setPacientesStatus("Salvando paciente...");
+
+    try {
+      await criarPaciente(session.token, {
+        ...novoPaciente,
+        cpf: novoPaciente.cpf.replace(/\D/g, ""),
+        cns: novoPaciente.cns?.trim() || null
+      });
+      setNovoPaciente({ nome: "", cpf: "", dataNascimento: "", telefone: "", cns: "" });
+      await carregarPacientes();
+      setPacientesStatus("Paciente cadastrado com sucesso.");
+    } catch (error) {
+      setPacientesStatus(error instanceof Error ? error.message : "Falha ao cadastrar paciente.");
+    }
+  }
+
+  useEffect(() => {
+    if (session && activeModule === "pacientes") {
+      void carregarPacientes();
+    }
+  }, [session, activeModule]);
 
   const VisibleIcon = selectedModule.icon;
 
@@ -269,37 +341,23 @@ export function App() {
               </div>
             </div>
 
-            <div className="flow-strip">
-              {flowSteps.map((step, index) => {
-                const Icon = step.icon;
-                return (
-                  <div className="flow-step" key={step.label}>
-                    <Icon size={18} />
-                    <span>{step.label}</span>
-                    {index < flowSteps.length - 1 && <ArrowRight size={16} />}
-                  </div>
-                );
-              })}
-            </div>
-
-            <div className="details-grid">
-              <section>
-                <h3>Permissoes</h3>
-                <div className="role-list">
-                  {selectedModule.roles.map((role) => (
-                    <span key={role}>{role}</span>
-                  ))}
-                </div>
-              </section>
-              <section>
-                <h3>Endpoints</h3>
-                <ul className="endpoint-list">
-                  {selectedModule.endpoints.map((endpoint) => (
-                    <li key={endpoint}>{endpoint}</li>
-                  ))}
-                </ul>
-              </section>
-            </div>
+            {activeModule === "pacientes" ? (
+              <PacientesCrud
+                filtroCpf={filtroCpf}
+                filtroNome={filtroNome}
+                novoPaciente={novoPaciente}
+                onBuscar={carregarPacientes}
+                onCriar={handleCriarPaciente}
+                pacientes={pacientes}
+                podeCriar={session?.usuario.papel === "ADMIN" || session?.usuario.papel === "RECEPCIONISTA"}
+                setFiltroCpf={setFiltroCpf}
+                setFiltroNome={setFiltroNome}
+                setNovoPaciente={setNovoPaciente}
+                status={pacientesStatus}
+              />
+            ) : (
+              <ModuleDetails selectedModule={selectedModule} />
+            )}
           </div>
 
           <div className="side-stack">
@@ -338,5 +396,176 @@ function Metric({ label, value, trend }: { label: string; value: string; trend: 
       <strong>{value}</strong>
       <small>{trend}</small>
     </article>
+  );
+}
+
+function ModuleDetails({ selectedModule }: { selectedModule: ModuleItem }) {
+  return (
+    <>
+      <div className="flow-strip">
+        {flowSteps.map((step, index) => {
+          const Icon = step.icon;
+          return (
+            <div className="flow-step" key={step.label}>
+              <Icon size={18} />
+              <span>{step.label}</span>
+              {index < flowSteps.length - 1 && <ArrowRight size={16} />}
+            </div>
+          );
+        })}
+      </div>
+
+      <div className="details-grid">
+        <section>
+          <h3>Permissoes</h3>
+          <div className="role-list">
+            {selectedModule.roles.map((role) => (
+              <span key={role}>{role}</span>
+            ))}
+          </div>
+        </section>
+        <section>
+          <h3>Endpoints</h3>
+          <ul className="endpoint-list">
+            {selectedModule.endpoints.map((endpoint) => (
+              <li key={endpoint}>{endpoint}</li>
+            ))}
+          </ul>
+        </section>
+      </div>
+    </>
+  );
+}
+
+function PacientesCrud({
+  filtroCpf,
+  filtroNome,
+  novoPaciente,
+  onBuscar,
+  onCriar,
+  pacientes,
+  podeCriar,
+  setFiltroCpf,
+  setFiltroNome,
+  setNovoPaciente,
+  status
+}: {
+  filtroCpf: string;
+  filtroNome: string;
+  novoPaciente: CriarPacienteRequest;
+  onBuscar: () => void;
+  onCriar: () => void;
+  pacientes: Paciente[];
+  podeCriar: boolean;
+  setFiltroCpf: (value: string) => void;
+  setFiltroNome: (value: string) => void;
+  setNovoPaciente: (value: CriarPacienteRequest) => void;
+  status: string;
+}) {
+  return (
+    <div className="crud-stack">
+      <section className="crud-panel">
+        <div className="crud-heading">
+          <div>
+            <h3>Buscar pacientes</h3>
+            <p>Consulta real no endpoint protegido `GET /pacientes`.</p>
+          </div>
+          <button className="secondary-action bordered" onClick={onBuscar} type="button">
+            Atualizar
+          </button>
+        </div>
+
+        <div className="form-grid two-columns">
+          <label>
+            Nome
+            <input value={filtroNome} onChange={(event) => setFiltroNome(event.target.value)} />
+          </label>
+          <label>
+            CPF
+            <input value={filtroCpf} onChange={(event) => setFiltroCpf(event.target.value)} maxLength={11} />
+          </label>
+        </div>
+      </section>
+
+      <section className="crud-panel">
+        <div className="crud-heading">
+          <div>
+            <h3>Cadastrar paciente</h3>
+            <p>Disponivel para ADMIN e RECEPCIONISTA.</p>
+          </div>
+          <button className="primary-action" disabled={!podeCriar} onClick={onCriar} type="button">
+            Salvar
+          </button>
+        </div>
+
+        <div className="form-grid">
+          <label>
+            Nome
+            <input
+              value={novoPaciente.nome}
+              onChange={(event) => setNovoPaciente({ ...novoPaciente, nome: event.target.value })}
+            />
+          </label>
+          <label>
+            CPF
+            <input
+              maxLength={11}
+              value={novoPaciente.cpf}
+              onChange={(event) => setNovoPaciente({ ...novoPaciente, cpf: event.target.value })}
+            />
+          </label>
+          <label>
+            Nascimento
+            <input
+              type="date"
+              value={novoPaciente.dataNascimento}
+              onChange={(event) => setNovoPaciente({ ...novoPaciente, dataNascimento: event.target.value })}
+            />
+          </label>
+          <label>
+            Telefone
+            <input
+              value={novoPaciente.telefone}
+              onChange={(event) => setNovoPaciente({ ...novoPaciente, telefone: event.target.value })}
+            />
+          </label>
+          <label>
+            CNS
+            <input
+              value={novoPaciente.cns ?? ""}
+              onChange={(event) => setNovoPaciente({ ...novoPaciente, cns: event.target.value })}
+            />
+          </label>
+        </div>
+      </section>
+
+      <section className="crud-panel">
+        <div className="crud-heading">
+          <div>
+            <h3>Pacientes cadastrados</h3>
+            <p>{status}</p>
+          </div>
+        </div>
+
+        <div className="data-table" role="table" aria-label="Pacientes cadastrados">
+          <div className="data-row header" role="row">
+            <span>Nome</span>
+            <span>CPF</span>
+            <span>Nascimento</span>
+            <span>Telefone</span>
+            <span>CNS</span>
+          </div>
+          {pacientes.map((paciente) => (
+            <div className="data-row" key={paciente.id} role="row">
+              <strong>{paciente.nome}</strong>
+              <span>{paciente.cpf}</span>
+              <span>{paciente.dataNascimento}</span>
+              <span>{paciente.telefone}</span>
+              <span>{paciente.cns ?? "-"}</span>
+            </div>
+          ))}
+        </div>
+      </section>
+    </div>
   );
 }
