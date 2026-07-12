@@ -39,7 +39,14 @@ Content-Type: application/json
   "nome": "Dra Ana",
   "papel": "Medico",
   "especialidade": "Clinica Geral",
-  "registroProfissional": "CRM12345"
+  "registroProfissional": "CRM12345",
+  "disponibilidades": [
+    {
+      "diaSemana": "Monday",
+      "horaInicio": "08:00:00",
+      "horaFim": "12:00:00"
+    }
+  ]
 }
 ```
 
@@ -48,4 +55,5 @@ Content-Type: application/json
 - nome e obrigatorio;
 - papel profissional precisa ser valido;
 - medico e enfermeiro precisam ter registro profissional;
-- registro profissional nao pode ser duplicado.
+- registro profissional nao pode ser duplicado;
+- horario final da disponibilidade precisa ser maior que o horario inicial.

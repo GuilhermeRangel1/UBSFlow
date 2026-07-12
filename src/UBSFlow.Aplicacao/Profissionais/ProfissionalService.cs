@@ -66,7 +66,8 @@ public class ProfissionalService
             request.Nome,
             request.Papel,
             request.Especialidade,
-            request.RegistroProfissional);
+            request.RegistroProfissional,
+            MapearDisponibilidades(request.Disponibilidades));
 
         profissionalRepositorio.Adicionar(profissional);
 
@@ -90,6 +91,19 @@ public class ProfissionalService
         {
             throw new ValidacaoException("Registro profissional e obrigatorio para medicos e enfermeiros.");
         }
+
+        if (request.Disponibilidades is null)
+        {
+            return;
+        }
+
+        foreach (var disponibilidade in request.Disponibilidades)
+        {
+            if (disponibilidade.HoraFim <= disponibilidade.HoraInicio)
+            {
+                throw new ValidacaoException("Hora final da disponibilidade deve ser maior que a hora inicial.");
+            }
+        }
     }
 
     private static void ValidarPaginacao(ListarProfissionaisRequest request)
@@ -112,6 +126,29 @@ public class ProfissionalService
             profissional.Nome,
             profissional.Papel,
             profissional.Especialidade,
-            profissional.RegistroProfissional);
+            profissional.RegistroProfissional,
+            profissional.Disponibilidades
+                .Select(MapearDisponibilidade)
+                .ToList());
+    }
+
+    private static IReadOnlyCollection<DisponibilidadeSemanal> MapearDisponibilidades(
+        IReadOnlyCollection<DisponibilidadeSemanalRequest>? disponibilidades)
+    {
+        return disponibilidades?
+            .Select(disponibilidade => new DisponibilidadeSemanal(
+                disponibilidade.DiaSemana,
+                disponibilidade.HoraInicio,
+                disponibilidade.HoraFim))
+            .ToList() ?? [];
+    }
+
+    private static DisponibilidadeSemanalResponse MapearDisponibilidade(
+        DisponibilidadeSemanal disponibilidade)
+    {
+        return new DisponibilidadeSemanalResponse(
+            disponibilidade.DiaSemana,
+            disponibilidade.HoraInicio,
+            disponibilidade.HoraFim);
     }
 }

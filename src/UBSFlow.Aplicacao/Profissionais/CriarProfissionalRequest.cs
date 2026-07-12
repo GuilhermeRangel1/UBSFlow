@@ -6,4 +6,5 @@ public sealed record CriarProfissionalRequest(
     string Nome,
     PapelProfissional Papel,
     string? Especialidade,
-    string? RegistroProfissional);
+    string? RegistroProfissional,
+    IReadOnlyCollection<DisponibilidadeSemanalRequest>? Disponibilidades = null);

@@ -7,4 +7,5 @@ public sealed record ProfissionalResponse(
     string Nome,
     PapelProfissional Papel,
     string? Especialidade,
-    string? RegistroProfissional);
+    string? RegistroProfissional,
+    IReadOnlyCollection<DisponibilidadeSemanalResponse> Disponibilidades);

@@ -22,6 +22,31 @@ public class ProfissionalServiceTests
     }
 
     [Fact]
+    public void Criar_DeveCadastrarDisponibilidades()
+    {
+        var repositorio = new ProfissionalRepositorioFake();
+        var service = new ProfissionalService(repositorio);
+        var request = new CriarProfissionalRequest(
+            "Dra Ana",
+            PapelProfissional.Medico,
+            "Clinica Geral",
+            "12345",
+            [
+                new DisponibilidadeSemanalRequest(
+                    DayOfWeek.Monday,
+                    new TimeOnly(8, 0),
+                    new TimeOnly(12, 0))
+            ]);
+
+        var profissional = service.Criar(request);
+
+        var disponibilidade = Assert.Single(profissional.Disponibilidades);
+        Assert.Equal(DayOfWeek.Monday, disponibilidade.DiaSemana);
+        Assert.Equal(new TimeOnly(8, 0), disponibilidade.HoraInicio);
+        Assert.Equal(new TimeOnly(12, 0), disponibilidade.HoraFim);
+    }
+
+    [Fact]
     public void Criar_NaoDevePermitirNomeVazio()
     {
         var repositorio = new ProfissionalRepositorioFake();
@@ -56,6 +81,27 @@ public class ProfissionalServiceTests
             service.Criar(CriarRequest("Dr Bruno", PapelProfissional.Medico, "12345")));
 
         Assert.Equal("Ja existe um profissional cadastrado com este registro.", exception.Message);
+    }
+
+    [Fact]
+    public void Criar_NaoDevePermitirDisponibilidadeComHorarioFinalAntesDoInicial()
+    {
+        var repositorio = new ProfissionalRepositorioFake();
+        var service = new ProfissionalService(repositorio);
+        var request = new CriarProfissionalRequest(
+            "Dra Ana",
+            PapelProfissional.Medico,
+            "Clinica Geral",
+            "12345",
+            [
+                new DisponibilidadeSemanalRequest(
+                    DayOfWeek.Monday,
+                    new TimeOnly(12, 0),
+                    new TimeOnly(8, 0))
+            ]);
+
+        var exception = Assert.Throws<ValidacaoException>(() => service.Criar(request));
+        Assert.Equal("Hora final da disponibilidade deve ser maior que a hora inicial.", exception.Message);
     }
 
     [Fact]
