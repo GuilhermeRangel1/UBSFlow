@@ -8,4 +8,5 @@ public interface ICheckInAtendimentoRepositorio
     CheckInAtendimento? ObterPorId(Guid id);
     CheckInAtendimento? ObterPorAgendamentoId(Guid agendamentoId);
     void Adicionar(CheckInAtendimento checkIn);
+    void SalvarAlteracoes();
 }

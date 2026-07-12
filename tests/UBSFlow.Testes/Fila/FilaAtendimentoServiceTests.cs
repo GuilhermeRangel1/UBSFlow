@@ -187,6 +187,10 @@ public class FilaAtendimentoServiceTests
         {
             checkIns.Add(checkIn);
         }
+
+        public void SalvarAlteracoes()
+        {
+        }
     }
 
     private sealed class AgendamentoRepositorioFake : IAgendamentoRepositorio

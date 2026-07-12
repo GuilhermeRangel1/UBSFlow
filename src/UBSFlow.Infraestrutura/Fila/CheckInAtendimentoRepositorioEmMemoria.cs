@@ -26,4 +26,8 @@ public class CheckInAtendimentoRepositorioEmMemoria : ICheckInAtendimentoReposit
     {
         CheckIns.Add(checkIn);
     }
+
+    public void SalvarAlteracoes()
+    {
+    }
 }

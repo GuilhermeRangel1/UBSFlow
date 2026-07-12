@@ -122,6 +122,7 @@ public class HistoricoPacienteServiceTests
         public CheckInAtendimento? ObterPorAgendamentoId(Guid agendamentoId) =>
             checkIns.FirstOrDefault(checkIn => checkIn.AgendamentoId == agendamentoId);
         public void Adicionar(CheckInAtendimento checkIn) => checkIns.Add(checkIn);
+        public void SalvarAlteracoes() { }
     }
 
     private sealed class TriagemRepositorioFake : ITriagemRepositorio

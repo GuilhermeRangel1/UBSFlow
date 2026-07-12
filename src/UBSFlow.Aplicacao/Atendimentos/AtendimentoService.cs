@@ -45,6 +45,7 @@ public class AtendimentoService
         }
 
         checkIn.IniciarAtendimento();
+        checkInRepositorio.SalvarAlteracoes();
 
         var atendimento = new Atendimento(
             checkIn.Id,
@@ -99,6 +100,7 @@ public class AtendimentoService
 
         atendimento.Finalizar(finalizadoEm);
         checkIn.FinalizarAtendimento();
+        checkInRepositorio.SalvarAlteracoes();
         auditoriaService?.Registrar(
             AcaoAuditoria.AtendimentoFinalizado,
             "Atendimento",

@@ -206,5 +206,9 @@ public class TriagemServiceTests
         {
             checkIns.Add(checkIn);
         }
+
+        public void SalvarAlteracoes()
+        {
+        }
     }
 }

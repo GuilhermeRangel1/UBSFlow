@@ -64,6 +64,7 @@ public class TriagemService
 
         triagemRepositorio.Adicionar(triagem);
         checkIn.ConcluirTriagem();
+        checkInRepositorio.SalvarAlteracoes();
         auditoriaService?.Registrar(
             AcaoAuditoria.TriagemRealizada,
             "Triagem",

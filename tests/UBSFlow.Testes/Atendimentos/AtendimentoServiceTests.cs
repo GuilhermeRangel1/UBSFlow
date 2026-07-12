@@ -218,5 +218,9 @@ public class AtendimentoServiceTests
         {
             checkIns.Add(checkIn);
         }
+
+        public void SalvarAlteracoes()
+        {
+        }
     }
 }
