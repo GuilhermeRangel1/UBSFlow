@@ -1,5 +1,5 @@
-using UBSFlow.Application;
-using UBSFlow.Infrastructure;
+using UBSFlow.Aplicacao;
+using UBSFlow.Infraestrutura;
 
 var builder = WebApplication.CreateBuilder(args);
 

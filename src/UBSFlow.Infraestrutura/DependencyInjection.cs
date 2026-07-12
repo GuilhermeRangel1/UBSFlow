@@ -1,7 +1,7 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace UBSFlow.Infrastructure;
+namespace UBSFlow.Infraestrutura;
 
 public static class DependencyInjection
 {

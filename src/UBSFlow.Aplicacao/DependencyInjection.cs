@@ -1,6 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 
-namespace UBSFlow.Application;
+namespace UBSFlow.Aplicacao;
 
 public static class DependencyInjection
 {

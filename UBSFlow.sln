@@ -4,13 +4,13 @@ VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UBSFlow.Api", "src\UBSFlow.Api\UBSFlow.Api.csproj", "{C0D19D05-843C-4D19-83D8-08303544C7A1}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UBSFlow.Application", "src\UBSFlow.Application\UBSFlow.Application.csproj", "{9B3682D9-E614-4AC3-8F81-9264B8933D4B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UBSFlow.Aplicacao", "src\UBSFlow.Aplicacao\UBSFlow.Aplicacao.csproj", "{9B3682D9-E614-4AC3-8F81-9264B8933D4B}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UBSFlow.Domain", "src\UBSFlow.Domain\UBSFlow.Domain.csproj", "{D4BE8B1B-923D-4BDB-94C1-A4D3807982CB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UBSFlow.Dominio", "src\UBSFlow.Dominio\UBSFlow.Dominio.csproj", "{D4BE8B1B-923D-4BDB-94C1-A4D3807982CB}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UBSFlow.Infrastructure", "src\UBSFlow.Infrastructure\UBSFlow.Infrastructure.csproj", "{1477B96F-B74C-4496-9C38-952EE167F4BB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UBSFlow.Infraestrutura", "src\UBSFlow.Infraestrutura\UBSFlow.Infraestrutura.csproj", "{1477B96F-B74C-4496-9C38-952EE167F4BB}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UBSFlow.Tests", "tests\UBSFlow.Tests\UBSFlow.Tests.csproj", "{B7851926-F120-49B5-8F48-3AC2D48A9CB0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UBSFlow.Testes", "tests\UBSFlow.Testes\UBSFlow.Testes.csproj", "{B7851926-F120-49B5-8F48-3AC2D48A9CB0}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

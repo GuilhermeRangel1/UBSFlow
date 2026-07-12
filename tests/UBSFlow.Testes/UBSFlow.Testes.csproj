@@ -11,6 +11,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\UBSFlow.Domain\UBSFlow.Domain.csproj" />
+    <ProjectReference Include="..\..\src\UBSFlow.Dominio\UBSFlow.Dominio.csproj" />
   </ItemGroup>
 </Project>

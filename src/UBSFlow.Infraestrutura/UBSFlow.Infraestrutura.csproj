@@ -5,7 +5,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\UBSFlow.Application\UBSFlow.Application.csproj" />
-    <ProjectReference Include="..\UBSFlow.Domain\UBSFlow.Domain.csproj" />
+    <ProjectReference Include="..\UBSFlow.Aplicacao\UBSFlow.Aplicacao.csproj" />
+    <ProjectReference Include="..\UBSFlow.Dominio\UBSFlow.Dominio.csproj" />
   </ItemGroup>
 </Project>

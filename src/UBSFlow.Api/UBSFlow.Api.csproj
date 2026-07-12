@@ -4,7 +4,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\UBSFlow.Application\UBSFlow.Application.csproj" />
-    <ProjectReference Include="..\UBSFlow.Infrastructure\UBSFlow.Infrastructure.csproj" />
+    <ProjectReference Include="..\UBSFlow.Aplicacao\UBSFlow.Aplicacao.csproj" />
+    <ProjectReference Include="..\UBSFlow.Infraestrutura\UBSFlow.Infraestrutura.csproj" />
   </ItemGroup>
 </Project>
