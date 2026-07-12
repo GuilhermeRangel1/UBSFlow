@@ -1,5 +1,7 @@
+using UBSFlow.Aplicacao.Auditoria;
 using UBSFlow.Aplicacao.Comum;
 using UBSFlow.Aplicacao.Fila;
+using UBSFlow.Dominio.Auditoria;
 using UBSFlow.Dominio.Atendimentos;
 using UBSFlow.Dominio.Fila;
 
@@ -7,15 +9,18 @@ namespace UBSFlow.Aplicacao.Atendimentos;
 
 public class AtendimentoService
 {
+    private readonly AuditoriaService? auditoriaService;
     private readonly IAtendimentoRepositorio atendimentoRepositorio;
     private readonly ICheckInAtendimentoRepositorio checkInRepositorio;
 
     public AtendimentoService(
         IAtendimentoRepositorio atendimentoRepositorio,
-        ICheckInAtendimentoRepositorio checkInRepositorio)
+        ICheckInAtendimentoRepositorio checkInRepositorio,
+        AuditoriaService? auditoriaService = null)
     {
         this.atendimentoRepositorio = atendimentoRepositorio;
         this.checkInRepositorio = checkInRepositorio;
+        this.auditoriaService = auditoriaService;
     }
 
     public AtendimentoResponse Criar(CriarAtendimentoRequest request)
@@ -94,6 +99,11 @@ public class AtendimentoService
 
         atendimento.Finalizar(finalizadoEm);
         checkIn.FinalizarAtendimento();
+        auditoriaService?.Registrar(
+            AcaoAuditoria.AtendimentoFinalizado,
+            "Atendimento",
+            atendimento.Id,
+            "Atendimento finalizado.");
 
         return MapearAtendimento(atendimento);
     }

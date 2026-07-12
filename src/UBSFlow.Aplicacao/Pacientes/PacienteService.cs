@@ -1,15 +1,21 @@
+using UBSFlow.Aplicacao.Auditoria;
 using UBSFlow.Aplicacao.Comum;
+using UBSFlow.Dominio.Auditoria;
 using UBSFlow.Dominio.Pacientes;
 
 namespace UBSFlow.Aplicacao.Pacientes;
 
 public class PacienteService
 {
+    private readonly AuditoriaService? auditoriaService;
     private readonly IPacienteRepositorio pacienteRepositorio;
 
-    public PacienteService(IPacienteRepositorio pacienteRepositorio)
+    public PacienteService(
+        IPacienteRepositorio pacienteRepositorio,
+        AuditoriaService? auditoriaService = null)
     {
         this.pacienteRepositorio = pacienteRepositorio;
+        this.auditoriaService = auditoriaService;
     }
 
     public ResultadoPaginado<PacienteResponse> Listar(ListarPacientesRequest request)
@@ -69,6 +75,11 @@ public class PacienteService
             request.Cns);
 
         pacienteRepositorio.Adicionar(paciente);
+        auditoriaService?.Registrar(
+            AcaoAuditoria.PacienteCriado,
+            "Paciente",
+            paciente.Id,
+            "Paciente cadastrado.");
 
         return MapearPaciente(paciente);
     }

@@ -1,5 +1,7 @@
+using UBSFlow.Aplicacao.Auditoria;
 using UBSFlow.Aplicacao.Comum;
 using UBSFlow.Aplicacao.Fila;
+using UBSFlow.Dominio.Auditoria;
 using UBSFlow.Dominio.Fila;
 using UBSFlow.Dominio.Triagens;
 
@@ -7,15 +9,18 @@ namespace UBSFlow.Aplicacao.Triagens;
 
 public class TriagemService
 {
-    private readonly ITriagemRepositorio triagemRepositorio;
+    private readonly AuditoriaService? auditoriaService;
     private readonly ICheckInAtendimentoRepositorio checkInRepositorio;
+    private readonly ITriagemRepositorio triagemRepositorio;
 
     public TriagemService(
         ITriagemRepositorio triagemRepositorio,
-        ICheckInAtendimentoRepositorio checkInRepositorio)
+        ICheckInAtendimentoRepositorio checkInRepositorio,
+        AuditoriaService? auditoriaService = null)
     {
         this.triagemRepositorio = triagemRepositorio;
         this.checkInRepositorio = checkInRepositorio;
+        this.auditoriaService = auditoriaService;
     }
 
     public TriagemResponse Criar(CriarTriagemRequest request)
@@ -59,6 +64,11 @@ public class TriagemService
 
         triagemRepositorio.Adicionar(triagem);
         checkIn.ConcluirTriagem();
+        auditoriaService?.Registrar(
+            AcaoAuditoria.TriagemRealizada,
+            "Triagem",
+            triagem.Id,
+            $"Triagem realizada com classificacao {triagem.ClassificacaoRisco}.");
 
         return MapearTriagem(triagem);
     }

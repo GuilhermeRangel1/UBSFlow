@@ -1,0 +1,22 @@
+using Microsoft.AspNetCore.Mvc;
+using UBSFlow.Aplicacao.Auditoria;
+
+namespace UBSFlow.Api.Controllers;
+
+[ApiController]
+[Route("auditoria")]
+public class AuditoriaController : ControllerBase
+{
+    private readonly AuditoriaService auditoriaService;
+
+    public AuditoriaController(AuditoriaService auditoriaService)
+    {
+        this.auditoriaService = auditoriaService;
+    }
+
+    [HttpGet]
+    public IActionResult Listar()
+    {
+        return Ok(auditoriaService.Listar());
+    }
+}

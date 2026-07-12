@@ -1,6 +1,8 @@
+using UBSFlow.Aplicacao.Auditoria;
 using UBSFlow.Aplicacao.Comum;
 using UBSFlow.Aplicacao.Pacientes;
 using UBSFlow.Aplicacao.Profissionais;
+using UBSFlow.Dominio.Auditoria;
 using UBSFlow.Dominio.Agenda;
 
 namespace UBSFlow.Aplicacao.Agenda;
@@ -8,17 +10,20 @@ namespace UBSFlow.Aplicacao.Agenda;
 public class AgendamentoService
 {
     private readonly IAgendamentoRepositorio agendamentoRepositorio;
+    private readonly AuditoriaService? auditoriaService;
     private readonly IPacienteRepositorio pacienteRepositorio;
     private readonly IProfissionalRepositorio profissionalRepositorio;
 
     public AgendamentoService(
         IAgendamentoRepositorio agendamentoRepositorio,
         IPacienteRepositorio pacienteRepositorio,
-        IProfissionalRepositorio profissionalRepositorio)
+        IProfissionalRepositorio profissionalRepositorio,
+        AuditoriaService? auditoriaService = null)
     {
         this.agendamentoRepositorio = agendamentoRepositorio;
         this.pacienteRepositorio = pacienteRepositorio;
         this.profissionalRepositorio = profissionalRepositorio;
+        this.auditoriaService = auditoriaService;
     }
 
     public ResultadoPaginado<AgendamentoResponse> Listar(ListarAgendamentosRequest request)
@@ -147,6 +152,11 @@ public class AgendamentoService
         }
 
         agendamento.Cancelar(request.Motivo);
+        auditoriaService?.Registrar(
+            AcaoAuditoria.AgendamentoCancelado,
+            "Agendamento",
+            agendamento.Id,
+            $"Agendamento cancelado. Motivo: {request.Motivo}");
 
         return MapearAgendamento(agendamento);
     }

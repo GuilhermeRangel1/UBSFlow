@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
+using UBSFlow.Aplicacao.Auditoria;
 using UBSFlow.Aplicacao.Agenda;
 using UBSFlow.Aplicacao.Atendimentos;
 using UBSFlow.Aplicacao.Fila;
@@ -21,6 +22,7 @@ public static class DependencyInjection
         services.AddScoped<TriagemService>();
         services.AddScoped<AtendimentoService>();
         services.AddScoped<RelatorioService>();
+        services.AddScoped<AuditoriaService>();
 
         return services;
     }
