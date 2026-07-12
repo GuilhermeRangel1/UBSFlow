@@ -49,6 +49,23 @@ type ModuleItem = {
   endpoints: string[];
 };
 
+const profileLabels: Record<string, string> = {
+  admin: "Administracao",
+  recepcao: "Recepcao",
+  enfermagem: "Enfermagem",
+  medico: "Medico",
+  gestao: "Gestao"
+};
+
+const roleLabels: Record<string, string> = {
+  ADMIN: "Administracao",
+  RECEPCIONISTA: "Recepcao",
+  ENFERMEIRO: "Enfermagem",
+  MEDICO: "Medico",
+  GESTOR: "Gestao",
+  Todos: "Todas as equipes"
+};
+
 const modules: ModuleItem[] = [
   {
     key: "visao-geral",
@@ -57,7 +74,7 @@ const modules: ModuleItem[] = [
     icon: LayoutDashboard,
     roles: ["Todos"],
     status: "Operacional",
-    endpoints: ["/health", "/auth/login"]
+    endpoints: ["Acompanhar a unidade", "Entrar na plataforma"]
   },
   {
     key: "pacientes",
@@ -65,8 +82,8 @@ const modules: ModuleItem[] = [
     subtitle: "Cadastro, busca e historico",
     icon: UserRound,
     roles: ["ADMIN", "RECEPCIONISTA", "ENFERMEIRO", "MEDICO", "GESTOR"],
-    status: "Persistido",
-    endpoints: ["GET /pacientes", "POST /pacientes", "GET /pacientes/{id}/historico"]
+    status: "Em uso",
+    endpoints: ["Buscar pacientes", "Cadastrar paciente", "Consultar historico"]
   },
   {
     key: "profissionais",
@@ -74,8 +91,8 @@ const modules: ModuleItem[] = [
     subtitle: "Equipe, papeis e disponibilidade",
     icon: UsersRound,
     roles: ["ADMIN", "GESTOR"],
-    status: "Persistido",
-    endpoints: ["GET /profissionais", "POST /profissionais"]
+    status: "Em uso",
+    endpoints: ["Gerenciar equipe", "Consultar disponibilidade"]
   },
   {
     key: "agenda",
@@ -83,8 +100,8 @@ const modules: ModuleItem[] = [
     subtitle: "Marcacao, remarcacao e cancelamento",
     icon: CalendarClock,
     roles: ["ADMIN", "RECEPCIONISTA"],
-    status: "Persistido",
-    endpoints: ["GET /agendamentos", "POST /agendamentos", "PATCH /agendamentos/{id}/cancelar"]
+    status: "Em uso",
+    endpoints: ["Organizar horarios", "Remarcar consultas", "Cancelar com motivo"]
   },
   {
     key: "fila",
@@ -92,8 +109,8 @@ const modules: ModuleItem[] = [
     subtitle: "Check-in e fluxo de atendimento",
     icon: ListChecks,
     roles: ["ADMIN", "RECEPCIONISTA", "ENFERMEIRO", "MEDICO", "GESTOR"],
-    status: "Persistido",
-    endpoints: ["POST /fila/check-ins", "GET /fila/hoje"]
+    status: "Em uso",
+    endpoints: ["Registrar chegada", "Acompanhar fila do dia"]
   },
   {
     key: "triagem",
@@ -101,8 +118,8 @@ const modules: ModuleItem[] = [
     subtitle: "Sinais vitais e risco automatico",
     icon: HeartPulse,
     roles: ["ADMIN", "ENFERMEIRO", "MEDICO"],
-    status: "Persistido",
-    endpoints: ["POST /triagens", "GET /triagens/{id}"]
+    status: "Em uso",
+    endpoints: ["Registrar sinais vitais", "Priorizar por risco"]
   },
   {
     key: "atendimentos",
@@ -110,8 +127,8 @@ const modules: ModuleItem[] = [
     subtitle: "Conduta, prescricao e fechamento",
     icon: Stethoscope,
     roles: ["ADMIN", "MEDICO"],
-    status: "Persistido",
-    endpoints: ["POST /atendimentos", "PATCH /atendimentos/{id}/finalizar"]
+    status: "Em uso",
+    endpoints: ["Registrar consulta", "Finalizar atendimento"]
   },
   {
     key: "relatorios",
@@ -120,7 +137,7 @@ const modules: ModuleItem[] = [
     icon: BarChart3,
     roles: ["ADMIN", "GESTOR"],
     status: "Disponivel",
-    endpoints: ["GET /relatorios/atendimentos", "GET /relatorios/classificacoes-risco"]
+    endpoints: ["Ver indicadores", "Comparar classificacoes"]
   },
   {
     key: "auditoria",
@@ -128,8 +145,8 @@ const modules: ModuleItem[] = [
     subtitle: "Logs de acoes criticas",
     icon: FileClock,
     roles: ["ADMIN"],
-    status: "Persistido",
-    endpoints: ["GET /auditoria"]
+    status: "Em uso",
+    endpoints: ["Acompanhar alteracoes importantes"]
   }
 ];
 
@@ -196,9 +213,9 @@ export function App() {
   const [usuario, setUsuario] = useState("medico");
   const [senha, setSenha] = useState("medico123");
   const [session, setSession] = useState<LoginResponse | null>(null);
-  const [loginStatus, setLoginStatus] = useState("Pronto para autenticar");
+  const [loginStatus, setLoginStatus] = useState("Selecione sua area para continuar.");
   const [pacientes, setPacientes] = useState<Paciente[]>([]);
-  const [pacientesStatus, setPacientesStatus] = useState("Entre para carregar pacientes.");
+  const [pacientesStatus, setPacientesStatus] = useState("Entre para visualizar pacientes.");
   const [filtroNome, setFiltroNome] = useState("");
   const [filtroCpf, setFiltroCpf] = useState("");
   const [novoPaciente, setNovoPaciente] = useState<CriarPacienteRequest>({
@@ -215,16 +232,16 @@ export function App() {
   );
 
   async function handleLogin() {
-    setLoginStatus("Autenticando...");
+    setLoginStatus("Entrando...");
 
     try {
       const response = await login(usuario, senha);
       setSession(response);
-      setLoginStatus(`Sessao ativa para ${response.usuario.nome}`);
+      setLoginStatus(`Conectado como ${response.usuario.nome}`);
       setActiveModule("visao-geral");
     } catch (error) {
       setSession(null);
-      setLoginStatus(error instanceof Error ? error.message : "Falha no login.");
+      setLoginStatus(error instanceof Error ? error.message : "Nao foi possivel entrar.");
     }
   }
 
@@ -254,7 +271,7 @@ export function App() {
 
   async function handleCriarPaciente() {
     if (!session) {
-      setPacientesStatus("Faca login como ADMIN ou RECEPCIONISTA para cadastrar.");
+      setPacientesStatus("Entre pela recepcao ou administracao para cadastrar.");
       return;
     }
 
@@ -331,7 +348,7 @@ export function App() {
         <section className="session-panel">
           <div className="session-heading">
             <LockKeyhole size={16} />
-            <span>Acesso demo</span>
+            <span>Acesso</span>
           </div>
           <label>
             Usuario
@@ -342,7 +359,7 @@ export function App() {
             }}>
               {demoUsers.map((user) => (
                 <option key={user.usuario} value={user.usuario}>
-                  {user.usuario} - {user.papel}
+                  {profileLabels[user.usuario] ?? user.papel}
                 </option>
               ))}
             </select>
@@ -374,7 +391,7 @@ export function App() {
           </div>
           <div className="shift-card">
             <span>Plantao atual</span>
-            <strong>{session ? session.usuario.papel : "Sem sessao"}</strong>
+            <strong>{session ? roleLabels[session.usuario.papel] ?? session.usuario.papel : "Sem sessao"}</strong>
             <small>{session ? session.usuario.nome : "Entre para operar os modulos"}</small>
           </div>
         </header>
@@ -408,7 +425,7 @@ export function App() {
           <Metric label="Atendimentos hoje" value={String(Math.max(42, pacientes.length))} trend="operacao ativa" />
           <Metric label="Tempo medio espera" value="18 min" trend="fila monitorada" />
           <Metric label="Triagens pendentes" value="7" trend="risco em ordem" />
-          <Metric label="Pacientes no cadastro" value={String(pacientes.length)} trend="dados persistidos" />
+          <Metric label="Pacientes no cadastro" value={String(pacientes.length)} trend="cadastro atualizado" />
         </section>
 
         <section className="workspace">
@@ -460,11 +477,10 @@ export function App() {
             <section className="status-card">
               <div>
                 <ShieldCheck size={18} />
-                <strong>RBAC ativo</strong>
+                <strong>Acesso por equipe</strong>
               </div>
               <p>
-                Cada modulo respeita papeis como recepcionista, enfermeiro, medico,
-                gestor e admin.
+                Cada area mostra apenas o que faz sentido para a rotina de quem esta usando.
               </p>
             </section>
           </div>
@@ -499,8 +515,6 @@ function PortfolioLanding({
   setUsuario: (value: string) => void;
   usuario: string;
 }) {
-  const selectedUser = demoUsers.find((item) => item.usuario === usuario) ?? demoUsers[0];
-
   function selecionarUsuario(value: string) {
     const selected = demoUsers.find((item) => item.usuario === value);
     setUsuario(value);
@@ -519,25 +533,25 @@ function PortfolioLanding({
         <div className="portfolio-links">
           <a href="#produto">Produto</a>
           <a href="#fluxo">Fluxo</a>
-          <a href="#demo">Demo</a>
+          <a href="#acesso">Acesso</a>
         </div>
       </nav>
 
       <section className="portfolio-hero">
         <div className="hero-copy">
-          <span className="portfolio-kicker">Backend real. Interface de produto. Fluxo de UBS.</span>
-          <h1>Uma API de clinica que parece um produto pronto para apresentar.</h1>
+          <span className="portfolio-kicker">Atendimento organizado. Equipe conectada.</span>
+          <h1>O fluxo da unidade inteiro em uma plataforma só.</h1>
           <p>
-            UBSFlow organiza pacientes, agenda, fila, triagem e atendimento em uma
-            experiencia pensada para vender dominio de backend sem abrir mao de visual.
+            UBSFlow aproxima recepcao, enfermagem, medicos e gestao em uma jornada clara:
+            da chegada do paciente ao fechamento do atendimento.
           </p>
           <div className="portfolio-actions">
-            <a className="landing-primary" href="#demo">
-              Entrar na demo
+            <a className="landing-primary" href="#acesso">
+              Entrar
               <ArrowRight size={18} />
             </a>
             <a className="landing-secondary" href="#fluxo">
-              Ver fluxo do produto
+              Ver fluxo
             </a>
           </div>
         </div>
@@ -557,7 +571,7 @@ function PortfolioLanding({
           </video>
           <div className="showcase-screen">
             <div>
-              <small>Operacao em movimento</small>
+              <small>Atendimento em movimento</small>
               <strong>Triagem prioritaria</strong>
             </div>
             <div className="pulse-line">
@@ -597,15 +611,15 @@ function PortfolioLanding({
           src="https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=900&q=80"
         />
         <div>
-          <span>Visual + backend</span>
-          <strong>Uma demo para prender o olhar antes do Swagger.</strong>
+          <span>Cuidado conectado</span>
+          <strong>Uma experiencia clara para operar a rotina da unidade.</strong>
         </div>
       </section>
 
       <section className="portfolio-section" id="produto">
         <div className="section-heading">
           <span>Por que existe</span>
-          <h2>O fluxo inteiro, embalado como produto.</h2>
+          <h2>Menos espera, mais clareza, melhor continuidade.</h2>
         </div>
         <div className="feature-reel">
           <article>
@@ -621,7 +635,7 @@ function PortfolioLanding({
           <article>
             <ShieldCheck size={24} />
             <strong>Controle</strong>
-            <p>RBAC, auditoria e persistencia fecham a historia tecnica do projeto.</p>
+            <p>Cada equipe atua no seu espaco, com seguranca e rastreio das mudancas.</p>
           </article>
         </div>
       </section>
@@ -646,27 +660,27 @@ function PortfolioLanding({
         </div>
       </section>
 
-      <section className="demo-section" id="demo">
+      <section className="demo-section" id="acesso">
         <div className="demo-copy">
-          <span>Demo navegavel</span>
-          <h2>Escolha um papel e entre no sistema operacional.</h2>
+          <span>Acesso</span>
+          <h2>Escolha sua area e entre na plataforma.</h2>
           <p>
-            Use a conta de recepcao para testar cadastro de pacientes ou entre como
-            medico, gestor, enfermagem e admin para visualizar a experiencia por perfil.
+            Cada perfil abre uma rotina diferente para acompanhar pacientes, organizar
+            agenda, priorizar triagem e visualizar a unidade.
           </p>
         </div>
 
         <div className="landing-login">
           <div className="session-heading">
             <LockKeyhole size={16} />
-            <span>Acesso demo</span>
+            <span>Entrar na UBSFlow</span>
           </div>
           <label>
-            Usuario
+            Area
             <select value={usuario} onChange={(event) => selecionarUsuario(event.target.value)}>
               {demoUsers.map((user) => (
                 <option key={user.usuario} value={user.usuario}>
-                  {user.usuario} - {user.papel}
+                  {profileLabels[user.usuario] ?? user.papel}
                 </option>
               ))}
             </select>
@@ -676,7 +690,7 @@ function PortfolioLanding({
             <input value={senha} onChange={(event) => setSenha(event.target.value)} type="password" />
           </label>
           <button className="landing-primary full" onClick={onLogin} type="button">
-            Entrar como {selectedUser.papel}
+            Entrar
             <LogIn size={17} />
           </button>
           <p>{loginStatus}</p>
@@ -704,15 +718,15 @@ function ModuleDetails({ selectedModule }: { selectedModule: ModuleItem }) {
 
       <div className="details-grid">
         <section>
-          <h3>Permissoes</h3>
+          <h3>Acessos</h3>
           <div className="role-list">
             {selectedModule.roles.map((role) => (
-              <span key={role}>{role}</span>
+              <span key={role}>{roleLabels[role] ?? role}</span>
             ))}
           </div>
         </section>
         <section>
-          <h3>Endpoints</h3>
+          <h3>Funcionalidades</h3>
           <ul className="endpoint-list">
             {selectedModule.endpoints.map((endpoint) => (
               <li key={endpoint}>{endpoint}</li>
