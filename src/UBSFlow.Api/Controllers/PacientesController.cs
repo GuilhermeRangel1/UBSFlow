@@ -9,10 +9,14 @@ namespace UBSFlow.Api.Controllers;
 public class PacientesController : ControllerBase
 {
     private readonly PacienteService pacienteService;
+    private readonly HistoricoPacienteService historicoPacienteService;
 
-    public PacientesController(PacienteService pacienteService)
+    public PacientesController(
+        PacienteService pacienteService,
+        HistoricoPacienteService historicoPacienteService)
     {
         this.pacienteService = pacienteService;
+        this.historicoPacienteService = historicoPacienteService;
     }
 
     [HttpGet]
@@ -40,6 +44,19 @@ public class PacientesController : ControllerBase
         var paciente = pacienteService.ObterPorId(id);
 
         return paciente is null ? NotFound() : Ok(paciente);
+    }
+
+    [HttpGet("{id:guid}/historico")]
+    public IActionResult ObterHistorico(Guid id)
+    {
+        try
+        {
+            return Ok(historicoPacienteService.Obter(id));
+        }
+        catch (ValidacaoException exception)
+        {
+            return BadRequest(new { mensagem = exception.Message });
+        }
     }
 
     [HttpPost]
