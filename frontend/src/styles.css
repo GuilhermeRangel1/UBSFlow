@@ -1990,7 +1990,7 @@ a {
 }
 
 .home-image-band {
-  height: clamp(220px, 32vh, 340px);
+  height: clamp(390px, 58vh, 660px);
   min-height: 0;
   position: relative;
   overflow: hidden;
@@ -2003,7 +2003,7 @@ a {
   height: 100%;
   min-height: 0;
   object-fit: cover;
-  object-position: center 42%;
+  object-position: center 34%;
   filter: saturate(1.05) contrast(1.05);
 }
 
