@@ -2,4 +2,6 @@ namespace UBSFlow.Aplicacao.Pacientes;
 
 public sealed record ListarPacientesRequest(
     string? Nome,
-    string? Cpf);
+    string? Cpf,
+    int Pagina = 1,
+    int TamanhoPagina = 10);

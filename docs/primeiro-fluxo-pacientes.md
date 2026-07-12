@@ -57,6 +57,24 @@ GET /pacientes?nome=maria
 GET /pacientes?cpf=12345678901
 ```
 
+A listagem tambem aceita paginacao:
+
+```http
+GET /pacientes?pagina=1&tamanhoPagina=10
+```
+
+A resposta de listagem vem com metadados:
+
+```json
+{
+  "itens": [],
+  "pagina": 1,
+  "tamanhoPagina": 10,
+  "totalItens": 0,
+  "totalPaginas": 0
+}
+```
+
 ### Buscar paciente por id
 
 ```http

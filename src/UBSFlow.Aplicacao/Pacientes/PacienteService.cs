@@ -12,8 +12,10 @@ public class PacienteService
         this.pacienteRepositorio = pacienteRepositorio;
     }
 
-    public IReadOnlyCollection<PacienteResponse> Listar(ListarPacientesRequest request)
+    public ResultadoPaginado<PacienteResponse> Listar(ListarPacientesRequest request)
     {
+        ValidarPaginacao(request);
+
         var pacientes = pacienteRepositorio.Listar().AsEnumerable();
 
         if (!string.IsNullOrWhiteSpace(request.Nome))
@@ -27,9 +29,20 @@ public class PacienteService
             pacientes = pacientes.Where(paciente => paciente.Cpf == request.Cpf);
         }
 
-        return pacientes
+        var totalItens = pacientes.Count();
+        var totalPaginas = (int)Math.Ceiling(totalItens / (double)request.TamanhoPagina);
+        var itens = pacientes
+            .Skip((request.Pagina - 1) * request.TamanhoPagina)
+            .Take(request.TamanhoPagina)
             .Select(MapearPaciente)
             .ToList();
+
+        return new ResultadoPaginado<PacienteResponse>(
+            itens,
+            request.Pagina,
+            request.TamanhoPagina,
+            totalItens,
+            totalPaginas);
     }
 
     public PacienteResponse? ObterPorId(Guid id)
@@ -85,6 +98,19 @@ public class PacienteService
         if (string.IsNullOrWhiteSpace(request.Telefone))
         {
             throw new ValidacaoException("Telefone e obrigatorio.");
+        }
+    }
+
+    private static void ValidarPaginacao(ListarPacientesRequest request)
+    {
+        if (request.Pagina < 1)
+        {
+            throw new ValidacaoException("Pagina deve ser maior ou igual a 1.");
+        }
+
+        if (request.TamanhoPagina is < 1 or > 100)
+        {
+            throw new ValidacaoException("Tamanho da pagina deve estar entre 1 e 100.");
         }
     }
 

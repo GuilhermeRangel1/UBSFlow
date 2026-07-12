@@ -101,9 +101,9 @@ public class PacienteServiceTests
         service.Criar(CriarRequest("Maria Silva", "12345678901"));
         service.Criar(CriarRequest("Joao Santos", "98765432100"));
 
-        var pacientes = service.Listar(new ListarPacientesRequest("maria", null));
+        var resultado = service.Listar(new ListarPacientesRequest("maria", null));
 
-        var paciente = Assert.Single(pacientes);
+        var paciente = Assert.Single(resultado.Itens);
         Assert.Equal("Maria Silva", paciente.Nome);
     }
 
@@ -115,10 +115,55 @@ public class PacienteServiceTests
         service.Criar(CriarRequest("Maria Silva", "12345678901"));
         service.Criar(CriarRequest("Joao Santos", "98765432100"));
 
-        var pacientes = service.Listar(new ListarPacientesRequest(null, "98765432100"));
+        var resultado = service.Listar(new ListarPacientesRequest(null, "98765432100"));
 
-        var paciente = Assert.Single(pacientes);
+        var paciente = Assert.Single(resultado.Itens);
         Assert.Equal("Joao Santos", paciente.Nome);
+    }
+
+    [Fact]
+    public void Listar_DevePaginarResultados()
+    {
+        var repositorio = new PacienteRepositorioFake();
+        var service = new PacienteService(repositorio);
+        service.Criar(CriarRequest("Paciente 1", "12345678901"));
+        service.Criar(CriarRequest("Paciente 2", "12345678902"));
+        service.Criar(CriarRequest("Paciente 3", "12345678903"));
+
+        var resultado = service.Listar(new ListarPacientesRequest(null, null, 2, 2));
+
+        var paciente = Assert.Single(resultado.Itens);
+        Assert.Equal("Paciente 3", paciente.Nome);
+        Assert.Equal(2, resultado.Pagina);
+        Assert.Equal(2, resultado.TamanhoPagina);
+        Assert.Equal(3, resultado.TotalItens);
+        Assert.Equal(2, resultado.TotalPaginas);
+    }
+
+    [Fact]
+    public void Listar_NaoDevePermitirPaginaMenorQueUm()
+    {
+        var repositorio = new PacienteRepositorioFake();
+        var service = new PacienteService(repositorio);
+
+        var exception = Assert.Throws<ValidacaoException>(() =>
+            service.Listar(new ListarPacientesRequest(null, null, 0, 10)));
+
+        Assert.Equal("Pagina deve ser maior ou igual a 1.", exception.Message);
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(101)]
+    public void Listar_NaoDevePermitirTamanhoPaginaInvalido(int tamanhoPagina)
+    {
+        var repositorio = new PacienteRepositorioFake();
+        var service = new PacienteService(repositorio);
+
+        var exception = Assert.Throws<ValidacaoException>(() =>
+            service.Listar(new ListarPacientesRequest(null, null, 1, tamanhoPagina)));
+
+        Assert.Equal("Tamanho da pagina deve estar entre 1 e 100.", exception.Message);
     }
 
     private static CriarPacienteRequest CriarRequest(string nome, string cpf)

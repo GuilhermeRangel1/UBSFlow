@@ -16,11 +16,22 @@ public class PacientesController : ControllerBase
     }
 
     [HttpGet]
-    public IActionResult Listar([FromQuery] string? nome, [FromQuery] string? cpf)
+    public IActionResult Listar(
+        [FromQuery] string? nome,
+        [FromQuery] string? cpf,
+        [FromQuery] int pagina = 1,
+        [FromQuery] int tamanhoPagina = 10)
     {
-        var request = new ListarPacientesRequest(nome, cpf);
+        try
+        {
+            var request = new ListarPacientesRequest(nome, cpf, pagina, tamanhoPagina);
 
-        return Ok(pacienteService.Listar(request));
+            return Ok(pacienteService.Listar(request));
+        }
+        catch (ValidacaoException exception)
+        {
+            return BadRequest(new { mensagem = exception.Message });
+        }
     }
 
     [HttpGet("{id:guid}")]
