@@ -4,6 +4,7 @@ using UBSFlow.Aplicacao.Atendimentos;
 using UBSFlow.Aplicacao.Fila;
 using UBSFlow.Aplicacao.Pacientes;
 using UBSFlow.Aplicacao.Profissionais;
+using UBSFlow.Aplicacao.Relatorios;
 using UBSFlow.Aplicacao.Triagens;
 
 namespace UBSFlow.Aplicacao;
@@ -19,6 +20,7 @@ public static class DependencyInjection
         services.AddScoped<FilaAtendimentoService>();
         services.AddScoped<TriagemService>();
         services.AddScoped<AtendimentoService>();
+        services.AddScoped<RelatorioService>();
 
         return services;
     }
