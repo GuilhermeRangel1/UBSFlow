@@ -34,3 +34,4 @@ O proximo passo e trocar os repositorios por implementacoes com EF Core, um modu
 ## Modulos usando EF Core
 
 - Pacientes.
+- Profissionais.

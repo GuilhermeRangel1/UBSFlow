@@ -29,7 +29,7 @@ public static class DependencyInjection
             options.UseNpgsql(configuration.GetConnectionString("DefaultConnection")));
 
         services.AddScoped<IPacienteRepositorio, PacienteRepositorioEf>();
-        services.AddSingleton<IProfissionalRepositorio, ProfissionalRepositorioEmMemoria>();
+        services.AddScoped<IProfissionalRepositorio, ProfissionalRepositorioEf>();
         services.AddSingleton<IAgendamentoRepositorio, AgendamentoRepositorioEmMemoria>();
         services.AddSingleton<ICheckInAtendimentoRepositorio, CheckInAtendimentoRepositorioEmMemoria>();
         services.AddSingleton<ITriagemRepositorio, TriagemRepositorioEmMemoria>();
