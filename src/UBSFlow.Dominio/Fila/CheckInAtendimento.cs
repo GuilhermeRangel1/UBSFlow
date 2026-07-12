@@ -22,4 +22,16 @@ public class CheckInAtendimento : Entidade
     public Guid ProfissionalId { get; private set; }
     public DateTimeOffset RealizadoEm { get; private set; }
     public StatusFilaAtendimento Status { get; private set; }
+
+    public void IniciarTriagem()
+    {
+        Status = StatusFilaAtendimento.EmTriagem;
+        MarcarComoAtualizada();
+    }
+
+    public void ConcluirTriagem()
+    {
+        Status = StatusFilaAtendimento.AguardandoAtendimento;
+        MarcarComoAtualizada();
+    }
 }

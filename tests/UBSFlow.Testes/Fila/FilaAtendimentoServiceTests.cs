@@ -115,6 +115,11 @@ public class FilaAtendimentoServiceTests
 
         public IReadOnlyCollection<CheckInAtendimento> Listar() => checkIns;
 
+        public CheckInAtendimento? ObterPorId(Guid id)
+        {
+            return checkIns.FirstOrDefault(checkIn => checkIn.Id == id);
+        }
+
         public CheckInAtendimento? ObterPorAgendamentoId(Guid agendamentoId)
         {
             return checkIns.FirstOrDefault(checkIn => checkIn.AgendamentoId == agendamentoId);

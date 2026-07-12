@@ -12,6 +12,11 @@ public class CheckInAtendimentoRepositorioEmMemoria : ICheckInAtendimentoReposit
         return CheckIns;
     }
 
+    public CheckInAtendimento? ObterPorId(Guid id)
+    {
+        return CheckIns.FirstOrDefault(checkIn => checkIn.Id == id);
+    }
+
     public CheckInAtendimento? ObterPorAgendamentoId(Guid agendamentoId)
     {
         return CheckIns.FirstOrDefault(checkIn => checkIn.AgendamentoId == agendamentoId);
