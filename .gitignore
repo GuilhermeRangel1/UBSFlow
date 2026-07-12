@@ -14,3 +14,6 @@ appsettings.Development.local.json
 .env
 .env.*
 !.env.example
+node_modules/
+dist/
+*.tsbuildinfo

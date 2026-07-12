@@ -66,6 +66,21 @@ Historico de alteracoes importantes, como alteracao de paciente, cancelamento de
 - xUnit
 - Serilog
 - GitHub Actions
+- React + Vite no frontend
+
+## Frontend
+
+O projeto possui uma interface React em `frontend/`, mantida separada do backend para ser facil de evoluir ou substituir.
+
+Para rodar:
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+O frontend abre em `http://localhost:5173` e encaminha chamadas de `/api` para a API em `http://localhost:5000`.
 
 ## Proximos Incrementos Tecnicos
 
