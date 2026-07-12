@@ -15,12 +15,16 @@ Agora a infraestrutura ja possui:
 docker compose up -d
 ```
 
+Se esse comando falhar dizendo que nao conseguiu conectar ao Docker, abra o Docker Desktop e tente novamente.
+
 ## Aplicar migrations
 
 ```bash
 dotnet tool restore
 dotnet tool run dotnet-ef database update --project src/UBSFlow.Infraestrutura --startup-project src/UBSFlow.Api --context UbsFlowDbContext
 ```
+
+Se o comando listar a migration, mas falhar ao conectar em `localhost:5432`, o PostgreSQL ainda nao esta rodando.
 
 Dados locais:
 
