@@ -1990,7 +1990,7 @@ a {
 }
 
 .home-image-band {
-  height: clamp(150px, 22vh, 220px);
+  height: clamp(220px, 32vh, 340px);
   min-height: 0;
   position: relative;
   overflow: hidden;
