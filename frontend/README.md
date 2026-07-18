@@ -9,7 +9,7 @@ npm install
 npm run dev
 ```
 
-Por padrao, o Vite abre em `http://localhost:5173`.
+Por padrao, o Vite abre em `http://localhost:3000`.
 
 ## Como rodar com Docker
 
@@ -19,7 +19,7 @@ Na raiz do projeto:
 docker compose up -d --build
 ```
 
-O frontend fica em `http://localhost:5173`.
+O frontend fica em `http://localhost:3000`.
 
 ## Integracao com a API
 

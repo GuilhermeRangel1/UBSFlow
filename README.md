@@ -80,7 +80,7 @@ npm install
 npm run dev
 ```
 
-O frontend abre em `http://localhost:5173` e encaminha chamadas de `/api` para a API em `http://localhost:5000`.
+O frontend abre em `http://localhost:3000` e encaminha chamadas de `/api` para a API em `http://localhost:5000`.
 
 Com Docker Compose, o frontend tambem sobe junto com a API e o PostgreSQL:
 
@@ -91,7 +91,7 @@ docker compose up -d --build
 Depois acesse:
 
 ```text
-http://localhost:5173
+http://localhost:3000
 ```
 
 ## Proximos Incrementos Tecnicos
