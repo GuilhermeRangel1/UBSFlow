@@ -17,6 +17,7 @@ import {
 import { type ReactNode, useEffect, useMemo, useState } from "react";
 import {
   carregarRelatorios,
+  cancelarAgendamento,
   criarAgendamento,
   criarAtendimento,
   criarCheckIn,
@@ -31,8 +32,10 @@ import {
   listarPacientes,
   listarProfissionais,
   login,
+  remarcarAgendamento,
   type Agendamento,
   type Atendimento,
+  type CancelarAgendamentoRequest,
   type CheckIn,
   type CriarAgendamentoRequest,
   type CriarAtendimentoRequest,
@@ -45,6 +48,7 @@ import {
   type Profissional,
   type RelatorioAtendimentos,
   type RelatorioCancelamentos,
+  type RemarcarAgendamentoRequest,
   type RelatorioRisco
 } from "./api/ubsflowApi";
 
@@ -113,6 +117,34 @@ function toDateTimeOffset(value: string) {
   return value ? new Date(value).toISOString() : "";
 }
 
+function toLocalInputValue(value: string) {
+  if (!value) return "";
+
+  const date = new Date(value);
+  const offset = date.getTimezoneOffset() * 60000;
+
+  return new Date(date.getTime() - offset).toISOString().slice(0, 16);
+}
+
+function formatRole(role: string) {
+  const normalized = role.toUpperCase();
+  return roleLabels[normalized] ?? roleLabels[role] ?? role;
+}
+
+function formatStatus(status: string) {
+  return status
+    .replace(/([a-z])([A-Z])/g, "$1 $2")
+    .replace(/^./, (letter) => letter.toUpperCase());
+}
+
+function getPacienteNome(pacientes: Paciente[], id: string) {
+  return pacientes.find((paciente) => paciente.id === id)?.nome ?? id;
+}
+
+function getProfissionalNome(profissionais: Profissional[], id: string) {
+  return profissionais.find((profissional) => profissional.id === id)?.nome ?? id;
+}
+
 export function App() {
   const [activeModule, setActiveModule] = useState<ModuleKey>("visao-geral");
   const [usuario, setUsuario] = useState("medico");
@@ -136,7 +168,7 @@ export function App() {
   const [profissionaisStatus, setProfissionaisStatus] = useState("");
   const [novoProfissional, setNovoProfissional] = useState<CriarProfissionalRequest>({
     nome: "",
-    papel: "MEDICO",
+    papel: "Medico",
     especialidade: "",
     registroProfissional: ""
   });
@@ -148,6 +180,14 @@ export function App() {
     profissionalId: "",
     inicio: "",
     fim: ""
+  });
+  const [agendamentoSelecionado, setAgendamentoSelecionado] = useState("");
+  const [remarcacao, setRemarcacao] = useState<RemarcarAgendamentoRequest>({
+    inicio: "",
+    fim: ""
+  });
+  const [cancelamento, setCancelamento] = useState<CancelarAgendamentoRequest>({
+    motivo: ""
   });
 
   const [fila, setFila] = useState<CheckIn[]>([]);
@@ -162,7 +202,7 @@ export function App() {
     pressaoDiastolica: 80,
     frequenciaCardiaca: 80,
     sintomas: "",
-    classificacaoRisco: "VERDE",
+    classificacaoRisco: "Verde",
     observacoes: ""
   });
 
@@ -270,7 +310,7 @@ export function App() {
         especialidade: novoProfissional.especialidade || null,
         registroProfissional: novoProfissional.registroProfissional || null
       });
-      setNovoProfissional({ nome: "", papel: "MEDICO", especialidade: "", registroProfissional: "" });
+      setNovoProfissional({ nome: "", papel: "Medico", especialidade: "", registroProfissional: "" });
       await carregarProfissionais();
       setProfissionaisStatus("Profissional salvo.");
     } catch (error) {
@@ -307,6 +347,37 @@ export function App() {
       setAgendaStatus("Agendamento salvo.");
     } catch (error) {
       setAgendaStatus(error instanceof Error ? error.message : "Falha ao salvar.");
+    }
+  }
+
+  async function handleRemarcarAgendamento() {
+    if (!session) return;
+
+    setAgendaStatus("Remarcando...");
+    try {
+      await remarcarAgendamento(session.token, agendamentoSelecionado, {
+        inicio: toDateTimeOffset(remarcacao.inicio),
+        fim: toDateTimeOffset(remarcacao.fim)
+      });
+      setRemarcacao({ inicio: "", fim: "" });
+      await carregarAgenda();
+      setAgendaStatus("Agendamento remarcado.");
+    } catch (error) {
+      setAgendaStatus(error instanceof Error ? error.message : "Falha ao remarcar.");
+    }
+  }
+
+  async function handleCancelarAgendamento() {
+    if (!session) return;
+
+    setAgendaStatus("Cancelando...");
+    try {
+      await cancelarAgendamento(session.token, agendamentoSelecionado, cancelamento.motivo);
+      setCancelamento({ motivo: "" });
+      await carregarAgenda();
+      setAgendaStatus("Agendamento cancelado.");
+    } catch (error) {
+      setAgendaStatus(error instanceof Error ? error.message : "Falha ao cancelar.");
     }
   }
 
@@ -355,7 +426,7 @@ export function App() {
         pressaoDiastolica: 80,
         frequenciaCardiaca: 80,
         sintomas: "",
-        classificacaoRisco: "VERDE",
+        classificacaoRisco: "Verde",
         observacoes: ""
       });
       setTriagemStatus("Triagem salva.");
@@ -441,8 +512,25 @@ export function App() {
 
     if (activeModule === "pacientes") void carregarPacientes();
     if (activeModule === "profissionais") void carregarProfissionais();
-    if (activeModule === "agenda") void carregarAgenda();
-    if (activeModule === "fila" && session.usuario.papel !== "RECEPCIONISTA") void carregarFila();
+    if (activeModule === "agenda") {
+      void carregarPacientes();
+      void carregarProfissionais();
+      void carregarAgenda();
+    }
+    if (activeModule === "fila") {
+      void carregarPacientes();
+      if (["ADMIN", "RECEPCIONISTA"].includes(session.usuario.papel)) void carregarAgenda();
+      if (["ADMIN", "RECEPCIONISTA", "GESTOR"].includes(session.usuario.papel)) void carregarProfissionais();
+      if (session.usuario.papel !== "RECEPCIONISTA") void carregarFila();
+    }
+    if (activeModule === "triagem") {
+      void carregarPacientes();
+      void carregarFila();
+    }
+    if (activeModule === "atendimentos") {
+      void carregarPacientes();
+      void carregarFila();
+    }
     if (activeModule === "relatorios") void handleCarregarRelatorios();
     if (activeModule === "auditoria") void handleCarregarAuditoria();
   }, [activeModule, session]);
@@ -566,10 +654,20 @@ export function App() {
           <WorkPage title="Agenda">
             <AgendaPage
               agendamentos={agendamentos}
+              cancelamento={cancelamento}
+              onCancelar={handleCancelarAgendamento}
               novoAgendamento={novoAgendamento}
               onCriar={handleCriarAgendamento}
               onListar={carregarAgenda}
+              onRemarcar={handleRemarcarAgendamento}
+              pacientes={pacientes}
+              profissionais={profissionais}
+              remarcacao={remarcacao}
+              selectedAgendamentoId={agendamentoSelecionado}
+              setCancelamento={setCancelamento}
               setNovoAgendamento={setNovoAgendamento}
+              setRemarcacao={setRemarcacao}
+              setSelectedAgendamentoId={setAgendamentoSelecionado}
               status={agendaStatus}
             />
           </WorkPage>
@@ -579,11 +677,14 @@ export function App() {
           <WorkPage title="Fila">
             <FilaPage
               agendamentoCheckIn={agendamentoCheckIn}
+              agendamentos={agendamentos}
               fila={fila}
               onCriarCheckIn={handleCriarCheckIn}
               onListar={carregarFila}
+              pacientes={pacientes}
               podeCriar={session.usuario.papel === "ADMIN" || session.usuario.papel === "RECEPCIONISTA"}
               podeListar={session.usuario.papel !== "RECEPCIONISTA"}
+              profissionais={profissionais}
               setAgendamentoCheckIn={setAgendamentoCheckIn}
               status={filaStatus}
             />
@@ -593,8 +694,10 @@ export function App() {
         {selectedModule.key === "triagem" && (
           <WorkPage title="Triagem">
             <TriagemPage
+              fila={fila}
               novaTriagem={novaTriagem}
               onCriar={handleCriarTriagem}
+              pacientes={pacientes}
               setNovaTriagem={setNovaTriagem}
               status={triagemStatus}
             />
@@ -605,9 +708,11 @@ export function App() {
           <WorkPage title="Atendimentos">
             <AtendimentosPage
               atendimentoCriado={atendimentoCriado}
+              fila={fila}
               novoAtendimento={novoAtendimento}
               onCriar={handleCriarAtendimento}
               onFinalizar={handleFinalizarAtendimento}
+              pacientes={pacientes}
               setNovoAtendimento={setNovoAtendimento}
               status={atendimentoStatus}
             />
@@ -997,11 +1102,11 @@ function ProfissionaisPage({
             <label>
               Papel
               <select value={novoProfissional.papel} onChange={(event) => setNovoProfissional({ ...novoProfissional, papel: event.target.value })}>
-                <option value="MEDICO">Médico</option>
-                <option value="ENFERMEIRO">Enfermeiro</option>
-                <option value="RECEPCIONISTA">Recepcionista</option>
-                <option value="GESTOR">Gestor</option>
-                <option value="ADMIN">Administração</option>
+                <option value="Medico">Médico</option>
+                <option value="Enfermeiro">Enfermeiro</option>
+                <option value="Recepcionista">Recepcionista</option>
+                <option value="Gestor">Gestor</option>
+                <option value="Admin">Administração</option>
               </select>
             </label>
             <label>
@@ -1036,19 +1141,41 @@ function ProfissionaisPage({
 
 function AgendaPage({
   agendamentos,
+  cancelamento,
   novoAgendamento,
+  onCancelar,
   onCriar,
   onListar,
+  onRemarcar,
+  pacientes,
+  profissionais,
+  remarcacao,
+  selectedAgendamentoId,
+  setCancelamento,
   setNovoAgendamento,
+  setRemarcacao,
+  setSelectedAgendamentoId,
   status
 }: {
   agendamentos: Agendamento[];
+  cancelamento: CancelarAgendamentoRequest;
   novoAgendamento: CriarAgendamentoRequest;
+  onCancelar: () => void;
   onCriar: () => void;
   onListar: () => void;
+  onRemarcar: () => void;
+  pacientes: Paciente[];
+  profissionais: Profissional[];
+  remarcacao: RemarcarAgendamentoRequest;
+  selectedAgendamentoId: string;
+  setCancelamento: (value: CancelarAgendamentoRequest) => void;
   setNovoAgendamento: (value: CriarAgendamentoRequest) => void;
+  setRemarcacao: (value: RemarcarAgendamentoRequest) => void;
+  setSelectedAgendamentoId: (value: string) => void;
   status: string;
 }) {
+  const agendamentosAtivos = agendamentos.filter((item) => item.status !== "Cancelado");
+
   return (
     <div className="work-grid">
       <section className="work-card">
@@ -1056,11 +1183,23 @@ function AgendaPage({
         <div className="form-grid">
           <label>
             Paciente ID
-            <input value={novoAgendamento.pacienteId} onChange={(event) => setNovoAgendamento({ ...novoAgendamento, pacienteId: event.target.value })} />
+            <select value={novoAgendamento.pacienteId} onChange={(event) => setNovoAgendamento({ ...novoAgendamento, pacienteId: event.target.value })}>
+              <option value="">Selecione</option>
+              {pacientes.map((paciente) => (
+                <option key={paciente.id} value={paciente.id}>{paciente.nome}</option>
+              ))}
+            </select>
           </label>
           <label>
             Profissional ID
-            <input value={novoAgendamento.profissionalId} onChange={(event) => setNovoAgendamento({ ...novoAgendamento, profissionalId: event.target.value })} />
+            <select value={novoAgendamento.profissionalId} onChange={(event) => setNovoAgendamento({ ...novoAgendamento, profissionalId: event.target.value })}>
+              <option value="">Selecione</option>
+              {profissionais.map((profissional) => (
+                <option key={profissional.id} value={profissional.id}>
+                  {profissional.nome} - {formatRole(profissional.papel)}
+                </option>
+              ))}
+            </select>
           </label>
           <label>
             Início
@@ -1074,17 +1213,58 @@ function AgendaPage({
         <button className="primary-action" onClick={onCriar} type="button">Salvar</button>
       </section>
 
+      <section className="work-card">
+        <CardTitle title="Ajustar" />
+        <label>
+          Consulta
+          <select
+            value={selectedAgendamentoId}
+            onChange={(event) => {
+              const selected = agendamentos.find((item) => item.id === event.target.value);
+              setSelectedAgendamentoId(event.target.value);
+              setRemarcacao({
+                inicio: selected ? toLocalInputValue(selected.inicio) : "",
+                fim: selected ? toLocalInputValue(selected.fim) : ""
+              });
+            }}
+          >
+            <option value="">Selecione</option>
+            {agendamentosAtivos.map((item) => (
+              <option key={item.id} value={item.id}>
+                {getPacienteNome(pacientes, item.pacienteId)} - {new Date(item.inicio).toLocaleString("pt-BR")}
+              </option>
+            ))}
+          </select>
+        </label>
+        <div className="form-grid two-columns">
+          <label>
+            Novo início
+            <input type="datetime-local" value={remarcacao.inicio} onChange={(event) => setRemarcacao({ ...remarcacao, inicio: event.target.value })} />
+          </label>
+          <label>
+            Novo fim
+            <input type="datetime-local" value={remarcacao.fim} onChange={(event) => setRemarcacao({ ...remarcacao, fim: event.target.value })} />
+          </label>
+        </div>
+        <button className="primary-action" disabled={!selectedAgendamentoId} onClick={onRemarcar} type="button">Remarcar</button>
+        <label>
+          Motivo do cancelamento
+          <input value={cancelamento.motivo} onChange={(event) => setCancelamento({ motivo: event.target.value })} />
+        </label>
+        <button className="secondary-action bordered" disabled={!selectedAgendamentoId || !cancelamento.motivo.trim()} onClick={onCancelar} type="button">Cancelar</button>
+      </section>
+
       <section className="work-card wide">
         <CardTitle title="Agendados" />
         <button className="secondary-action bordered" onClick={onListar} type="button">Atualizar</button>
         <SimpleTable
           columns={["Paciente", "Profissional", "Início", "Fim", "Status"]}
           rows={agendamentos.map((item) => [
-            item.pacienteId,
-            item.profissionalId,
+            getPacienteNome(pacientes, item.pacienteId),
+            getProfissionalNome(profissionais, item.profissionalId),
             new Date(item.inicio).toLocaleString("pt-BR"),
             new Date(item.fim).toLocaleString("pt-BR"),
-            item.status
+            formatStatus(item.status)
           ])}
         />
       </section>
@@ -1094,31 +1274,46 @@ function AgendaPage({
 
 function FilaPage({
   agendamentoCheckIn,
+  agendamentos,
   fila,
   onCriarCheckIn,
   onListar,
+  pacientes,
   podeCriar,
   podeListar,
+  profissionais,
   setAgendamentoCheckIn,
   status
 }: {
   agendamentoCheckIn: string;
+  agendamentos: Agendamento[];
   fila: CheckIn[];
   onCriarCheckIn: () => void;
   onListar: () => void;
+  pacientes: Paciente[];
   podeCriar: boolean;
   podeListar: boolean;
+  profissionais: Profissional[];
   setAgendamentoCheckIn: (value: string) => void;
   status: string;
 }) {
+  const agendamentosParaCheckIn = agendamentos.filter((item) => item.status !== "Cancelado");
+
   return (
     <div className="work-grid">
       {podeCriar && (
         <section className="work-card">
           <CardTitle title="Check-in" status={status} />
           <label>
-            Agendamento ID
-            <input value={agendamentoCheckIn} onChange={(event) => setAgendamentoCheckIn(event.target.value)} />
+            Consulta
+            <select value={agendamentoCheckIn} onChange={(event) => setAgendamentoCheckIn(event.target.value)}>
+              <option value="">Selecione</option>
+              {agendamentosParaCheckIn.map((item) => (
+                <option key={item.id} value={item.id}>
+                  {getPacienteNome(pacientes, item.pacienteId)} - {new Date(item.inicio).toLocaleString("pt-BR")}
+                </option>
+              ))}
+            </select>
           </label>
           <button className="primary-action" onClick={onCriarCheckIn} type="button">Registrar</button>
         </section>
@@ -1132,10 +1327,10 @@ function FilaPage({
             columns={["Check-in", "Paciente", "Profissional", "Status", "Risco"]}
             rows={fila.map((item) => [
               item.id,
-              item.pacienteId,
-              item.profissionalId,
-              item.status,
-              item.classificacaoRisco ?? "-"
+              getPacienteNome(pacientes, item.pacienteId),
+              getProfissionalNome(profissionais, item.profissionalId),
+              formatStatus(item.status),
+              item.classificacaoRisco ? formatStatus(item.classificacaoRisco) : "-"
             ])}
           />
         </section>
@@ -1145,23 +1340,36 @@ function FilaPage({
 }
 
 function TriagemPage({
+  fila,
   novaTriagem,
   onCriar,
+  pacientes,
   setNovaTriagem,
   status
 }: {
+  fila: CheckIn[];
   novaTriagem: CriarTriagemRequest;
   onCriar: () => void;
+  pacientes: Paciente[];
   setNovaTriagem: (value: CriarTriagemRequest) => void;
   status: string;
 }) {
+  const aguardandoTriagem = fila.filter((item) => item.status === "AguardandoTriagem");
+
   return (
     <section className="work-card wide">
       <CardTitle title="Nova triagem" status={status} />
       <div className="form-grid">
         <label>
           Check-in ID
-          <input value={novaTriagem.checkInId} onChange={(event) => setNovaTriagem({ ...novaTriagem, checkInId: event.target.value })} />
+          <select value={novaTriagem.checkInId} onChange={(event) => setNovaTriagem({ ...novaTriagem, checkInId: event.target.value })}>
+            <option value="">Selecione</option>
+            {aguardandoTriagem.map((item) => (
+              <option key={item.id} value={item.id}>
+                {getPacienteNome(pacientes, item.pacienteId)} - {new Date(item.realizadoEm).toLocaleString("pt-BR")}
+              </option>
+            ))}
+          </select>
         </label>
         <label>
           Temperatura
@@ -1182,11 +1390,10 @@ function TriagemPage({
         <label>
           Risco
           <select value={novaTriagem.classificacaoRisco} onChange={(event) => setNovaTriagem({ ...novaTriagem, classificacaoRisco: event.target.value })}>
-            <option value="AZUL">Azul</option>
-            <option value="VERDE">Verde</option>
-            <option value="AMARELO">Amarelo</option>
-            <option value="LARANJA">Laranja</option>
-            <option value="VERMELHO">Vermelho</option>
+            <option value="Verde">Verde</option>
+            <option value="Amarelo">Amarelo</option>
+            <option value="Laranja">Laranja</option>
+            <option value="Vermelho">Vermelho</option>
           </select>
         </label>
         <label>
@@ -1205,19 +1412,25 @@ function TriagemPage({
 
 function AtendimentosPage({
   atendimentoCriado,
+  fila,
   novoAtendimento,
   onCriar,
   onFinalizar,
+  pacientes,
   setNovoAtendimento,
   status
 }: {
   atendimentoCriado: Atendimento | null;
+  fila: CheckIn[];
   novoAtendimento: CriarAtendimentoRequest;
   onCriar: () => void;
   onFinalizar: () => void;
+  pacientes: Paciente[];
   setNovoAtendimento: (value: CriarAtendimentoRequest) => void;
   status: string;
 }) {
+  const aguardandoAtendimento = fila.filter((item) => item.status === "AguardandoAtendimento");
+
   return (
     <div className="work-grid">
       <section className="work-card wide">
@@ -1225,7 +1438,14 @@ function AtendimentosPage({
         <div className="form-grid">
           <label>
             Check-in ID
-            <input value={novoAtendimento.checkInId} onChange={(event) => setNovoAtendimento({ ...novoAtendimento, checkInId: event.target.value })} />
+            <select value={novoAtendimento.checkInId} onChange={(event) => setNovoAtendimento({ ...novoAtendimento, checkInId: event.target.value })}>
+              <option value="">Selecione</option>
+              {aguardandoAtendimento.map((item) => (
+                <option key={item.id} value={item.id}>
+                  {getPacienteNome(pacientes, item.pacienteId)} - {item.classificacaoRisco ? formatStatus(item.classificacaoRisco) : "Sem risco"}
+                </option>
+              ))}
+            </select>
           </label>
           <label>
             Queixa

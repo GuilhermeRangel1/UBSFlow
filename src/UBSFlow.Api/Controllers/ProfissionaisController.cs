@@ -7,7 +7,7 @@ using UBSFlow.Dominio.Profissionais;
 namespace UBSFlow.Api.Controllers;
 
 [ApiController]
-[Authorize(Roles = "ADMIN,GESTOR")]
+[Authorize(Roles = "ADMIN,RECEPCIONISTA,GESTOR")]
 [Route("profissionais")]
 public class ProfissionaisController : ControllerBase
 {

@@ -1,58 +1,85 @@
 # UBSFlow
 
-API backend para gestao do fluxo de atendimento em uma UBS ou clinica, cobrindo cadastro de pacientes, profissionais, agenda, triagem, fila de atendimento, permissoes por perfil e historico clinico-operacional.
+UBSFlow e uma plataforma para organizar o fluxo de atendimento de uma UBS ou clinica, conectando recepcao, enfermagem, medicos e gestao em uma jornada unica: cadastro, agenda, chegada, triagem, atendimento, historico, relatorios e auditoria.
 
-O diferencial do projeto nao e apenas cadastrar pacientes. A proposta e demonstrar entendimento do fluxo real de atendimento: chegada, check-in, triagem, prioridade, consulta, fechamento, historico, relatorios e auditoria.
+O objetivo do projeto nao e apenas cadastrar pacientes. A proposta e mostrar um backend com regra de negocio real, controle de acesso por perfil, rastreabilidade e uma interface funcional para operar o atendimento ponta a ponta.
 
-## Objetivos
+## Visao Geral
 
-- Modelar o fluxo completo de atendimento de uma UBS/clinica.
-- Criar uma API REST com regras de negocio relevantes para backend.
-- Aplicar autenticacao, autorizacao por perfil, auditoria e historico.
-- Usar uma stack profissional com .NET, PostgreSQL, Entity Framework Core, Docker, testes e documentacao OpenAPI.
-- Evoluir o projeto em commits pequenos, lineares e bem organizados.
+- API REST em C#/.NET 8 com ASP.NET Core.
+- Frontend em React + Vite integrado aos endpoints da API.
+- PostgreSQL com Entity Framework Core e migrations.
+- Autenticacao JWT e autorizacao por perfil.
+- Swagger/OpenAPI para documentacao dos endpoints.
+- Docker Compose para subir frontend, API e banco juntos.
+- Testes automatizados com xUnit.
+- Logs estruturados com Serilog.
 
-## Papeis
+## Fluxo do Sistema
 
-- `ADMIN`: gerencia unidade, profissionais e permissoes.
-- `RECEPCIONISTA`: cadastra pacientes e agenda consultas.
-- `ENFERMEIRO`: realiza triagem.
-- `MEDICO`: registra atendimento e conduta.
-- `GESTOR`: visualiza relatorios e indicadores.
+1. A recepcao cadastra pacientes e marca consultas.
+2. O paciente chega na unidade e faz check-in.
+3. A enfermagem realiza a triagem com sinais vitais, sintomas e classificacao de risco.
+4. A fila e ordenada considerando prioridade e status do atendimento.
+5. O medico registra consulta, conduta, prescricao e finalizacao.
+6. A gestao acompanha indicadores e a auditoria registra acoes criticas.
 
-## Modulos
+## Perfis de Acesso
+
+| Perfil | Acesso principal |
+| --- | --- |
+| `ADMIN` | Gerencia cadastros, acessa auditoria e opera todos os modulos |
+| `RECEPCIONISTA` | Cadastra pacientes, agenda consultas e registra check-ins |
+| `ENFERMEIRO` | Visualiza fila e realiza triagens |
+| `MEDICO` | Visualiza fila e registra atendimentos |
+| `GESTOR` | Acompanha relatorios, indicadores e dados operacionais |
+
+## Funcionalidades
 
 ### Pacientes
 
-Cadastro de pacientes com CPF/CNS, contato, endereco, data de nascimento, condicoes pre-existentes e historico de atendimentos.
+- Cadastro com CPF, CNS, telefone e data de nascimento.
+- Busca por nome e CPF.
+- Historico clinico-operacional do paciente.
+- Restricao de dados conforme perfil.
 
 ### Profissionais
 
-Cadastro de medicos, enfermeiros e recepcionistas, incluindo especialidade, CRM/COREN quando aplicavel e disponibilidade semanal.
+- Cadastro por papel profissional.
+- Especialidade, registro profissional e disponibilidade semanal.
+- Listagem para apoiar agendamentos e gestao da equipe.
 
 ### Agenda
 
-Criacao de horarios, marcacao, remarcacao, cancelamento e acompanhamento do status da consulta.
+- Marcacao de consulta por paciente, profissional e horario.
+- Remarcacao de consultas.
+- Cancelamento com motivo obrigatorio.
+- Regra contra conflito de horario para o mesmo profissional.
 
-### Fila de Atendimento
+### Fila
 
-Fluxo de chegada do paciente, check-in, entrada na fila, triagem e encaminhamento para atendimento medico.
+- Check-in de pacientes agendados.
+- Fila do dia por status.
+- Transicao entre chegada, triagem, atendimento e finalizacao.
 
 ### Triagem
 
-Registro de sinais vitais, sintomas, classificacao de risco e observacoes. A triagem tambem deve calcular prioridade automaticamente com base em dados como idade, febre, pressao, sintomas e classificacao informada.
+- Registro de temperatura, pressao arterial, frequencia cardiaca, sintomas e observacoes.
+- Classificacao automatica de prioridade considerando sinais e risco informado.
+- Encaminhamento do paciente para atendimento medico.
 
 ### Atendimento
 
-Registro de queixa, hipotese ou diagnostico, conduta, prescricao simples, encaminhamento e retorno.
+- Registro de queixa, hipotese diagnostica, conduta, prescricao e encaminhamento.
+- Finalizacao de atendimento.
+- Regra que impede consulta medica sem triagem previa.
 
-### Relatorios
+### Relatorios e Auditoria
 
-Indicadores como atendimentos por periodo, tempo medio de espera, casos por classificacao de risco, produtividade por profissional, faltas e cancelamentos.
-
-### Auditoria
-
-Historico de alteracoes importantes, como alteracao de paciente, cancelamento de consulta e fechamento de atendimento.
+- Atendimentos por periodo.
+- Casos por classificacao de risco.
+- Cancelamentos por periodo.
+- Logs de acoes importantes, como cancelamento de consulta e finalizacao de atendimento.
 
 ## Stack
 
@@ -61,28 +88,16 @@ Historico de alteracoes importantes, como alteracao de paciente, cancelamento de
 - PostgreSQL
 - Entity Framework Core
 - JWT + RBAC
-- Swagger/OpenAPI
+- React + Vite
 - Docker Compose
 - xUnit
 - Serilog
+- Swagger/OpenAPI
 - GitHub Actions
-- React + Vite no frontend
 
-## Frontend
+## Como Rodar Com Docker
 
-O projeto possui uma interface React em `frontend/`, mantida separada do backend para ser facil de evoluir ou substituir.
-
-Para rodar:
-
-```bash
-cd frontend
-npm install
-npm run dev
-```
-
-O frontend abre em `http://localhost:3000` e encaminha chamadas de `/api` para a API em `http://localhost:5000`.
-
-Com Docker Compose, o frontend tambem sobe junto com a API e o PostgreSQL:
+Com o Docker Desktop aberto, rode na raiz do projeto:
 
 ```bash
 docker compose up -d --build
@@ -91,27 +106,10 @@ docker compose up -d --build
 Depois acesse:
 
 ```text
-http://localhost:3000
+Frontend: http://localhost:3000
+API:      http://localhost:5000
+Swagger:  http://localhost:5000/swagger
 ```
-
-## Proximos Incrementos Tecnicos
-
-- FluentValidation para centralizar validacoes.
-- Hash de senha mais forte com salt por usuario.
-- Testes de integracao com PostgreSQL.
-- Aplicacao automatica de migrations em ambiente de desenvolvimento.
-
-## CI
-
-O projeto possui workflow de GitHub Actions em `.github/workflows/dotnet-ci.yml` para executar:
-
-- `dotnet restore`
-- `dotnet build`
-- `dotnet test`
-
-## Logs
-
-A API usa Serilog para logs estruturados no console e logs automaticos de requisicoes HTTP.
 
 ## Como Rodar Localmente
 
@@ -124,13 +122,7 @@ dotnet restore
 Suba o PostgreSQL:
 
 ```bash
-docker compose up -d
-```
-
-Para subir frontend, API e PostgreSQL juntos via Docker:
-
-```bash
-docker compose up -d --build
+docker compose up -d postgres
 ```
 
 Aplique as migrations:
@@ -146,114 +138,62 @@ Rode a API:
 dotnet run --project src/UBSFlow.Api
 ```
 
-Swagger:
+Em outro terminal, rode o frontend:
 
-```text
-http://localhost:5000/swagger
+```bash
+cd frontend
+npm install
+npm run dev
 ```
 
-## Regras de Negocio
+## Usuarios Para Teste
 
-- Nao permitir dois agendamentos no mesmo horario para o mesmo profissional.
-- Nao permitir atendimento medico sem triagem, exceto em caso de emergencia.
-- Classificar prioridade automaticamente na triagem.
-- Impedir que recepcionistas visualizem dados clinicos sensiveis.
-- Registrar auditoria em alteracoes criticas.
-- Calcular tempo de espera entre check-in, triagem e atendimento.
-- Exigir motivo para cancelamento de consulta.
-- Manter historico imutavel de atendimentos finalizados.
-- Aplicar paginacao e filtros nas listagens.
-- Permitir relatorios por periodo, unidade e profissional.
-
-## Endpoints
-
-### Autenticacao
-
-- `POST /auth/login`
-
-### Pacientes
-
-- `GET /pacientes`
-- `POST /pacientes`
-- `GET /pacientes/{id}`
-- `GET /pacientes/{id}/historico`
-
-### Profissionais
-
-- `GET /profissionais`
-- `POST /profissionais`
-- `GET /profissionais/{id}`
-
-### Agenda
-
-- `GET /agendamentos`
-- `POST /agendamentos`
-- `GET /agendamentos/{id}`
-- `PATCH /agendamentos/{id}/remarcar`
-- `PATCH /agendamentos/{id}/cancelar`
-
-### Fila
-
-- `POST /fila/check-ins`
-- `GET /fila/hoje`
-- `GET /fila`
-
-### Triagem
-
-- `POST /triagens`
-- `GET /triagens/{id}`
-
-### Atendimento
-
-- `POST /atendimentos`
-- `GET /atendimentos/{id}`
-- `PATCH /atendimentos/{id}/finalizar`
-
-### Relatorios
-
-- `GET /relatorios/atendimentos`
-- `GET /relatorios/classificacoes-risco`
-- `GET /relatorios/cancelamentos`
-
-### Auditoria
-
-- `GET /auditoria`
-
-## Usuarios de Demonstracao
-
-| Usuario | Senha | Papel |
+| Usuario | Senha | Perfil |
 | --- | --- | --- |
-| admin | admin123 | ADMIN |
-| recepcao | recepcao123 | RECEPCIONISTA |
-| enfermagem | enfermagem123 | ENFERMEIRO |
-| medico | medico123 | MEDICO |
-| gestao | gestao123 | GESTOR |
+| `admin` | `admin123` | ADMIN |
+| `recepcao` | `recepcao123` | RECEPCIONISTA |
+| `enfermagem` | `enfermagem123` | ENFERMEIRO |
+| `medico` | `medico123` | MEDICO |
+| `gestao` | `gestao123` | GESTOR |
 
-## Roadmap
+## Endpoints Principais
 
-### MVP 1
+```text
+POST   /auth/login
 
-- Pacientes
-- Profissionais
-- Autenticacao
-- Papeis e autorizacao
-- Agenda
-- Regra contra conflito de horario
+GET    /pacientes
+POST   /pacientes
+GET    /pacientes/{id}/historico
 
-### MVP 2
+GET    /profissionais
+POST   /profissionais
 
-- Check-in
-- Fila de atendimento
-- Triagem
-- Classificacao automatica de risco
+GET    /agendamentos
+POST   /agendamentos
+PATCH  /agendamentos/{id}/remarcar
+PATCH  /agendamentos/{id}/cancelar
 
-### MVP 3
+POST   /fila/check-ins
+GET    /fila/hoje
 
-- Atendimento medico
-- Historico clinico-operacional
-- Auditoria
-- Relatorios
+POST   /triagens
+GET    /triagens/{id}
 
-## Descricao para Curriculo
+POST   /atendimentos
+PATCH  /atendimentos/{id}/finalizar
 
-Desenvolvi uma API REST em C#/.NET para gestao do fluxo de atendimento de clinicas/UBS, com agenda, fila, triagem, historico de pacientes, RBAC, auditoria, PostgreSQL, Entity Framework Core, Docker, testes automatizados e documentacao OpenAPI.
+GET    /relatorios/atendimentos
+GET    /relatorios/classificacoes-risco
+GET    /relatorios/cancelamentos
+GET    /auditoria
+```
+
+## Testes
+
+```bash
+dotnet test
+```
+
+## Resumo Para Curriculo
+
+Desenvolvi o UBSFlow, uma plataforma full stack para gestao do fluxo de atendimento de UBS/clinicas, com API REST em C#/.NET, React, PostgreSQL, Entity Framework Core, JWT/RBAC, agenda, fila, triagem com prioridade automatica, atendimento medico, auditoria, relatorios, Docker, testes automatizados e documentacao OpenAPI.

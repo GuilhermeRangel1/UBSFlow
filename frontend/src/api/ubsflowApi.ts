@@ -67,6 +67,15 @@ export type CriarAgendamentoRequest = {
   fim: string;
 };
 
+export type RemarcarAgendamentoRequest = {
+  inicio: string;
+  fim: string;
+};
+
+export type CancelarAgendamentoRequest = {
+  motivo: string;
+};
+
 export type CheckIn = {
   id: string;
   agendamentoId: string;
@@ -241,6 +250,24 @@ export async function criarAgendamento(
   return request<Agendamento>("/agendamentos", token, {
     method: "POST",
     body: JSON.stringify(agendamento)
+  });
+}
+
+export async function remarcarAgendamento(
+  token: string,
+  id: string,
+  agendamento: RemarcarAgendamentoRequest
+): Promise<Agendamento> {
+  return request<Agendamento>(`/agendamentos/${id}/remarcar`, token, {
+    method: "PATCH",
+    body: JSON.stringify(agendamento)
+  });
+}
+
+export async function cancelarAgendamento(token: string, id: string, motivo: string): Promise<Agendamento> {
+  return request<Agendamento>(`/agendamentos/${id}/cancelar`, token, {
+    method: "PATCH",
+    body: JSON.stringify({ motivo })
   });
 }
 
